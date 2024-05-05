@@ -84,7 +84,7 @@ where
 impl<K> Vector<K>
 where
     K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + fmt::Display,
-    Standard: Distribution<K>,
+    Standard: rand::distributions::Distribution<K>,
 {
     fn operate<F>(&mut self, v: &Vector<K>, op: F)
     where
@@ -119,12 +119,14 @@ where
         self.data.iter_mut().for_each(|v| *v = *v * a);
     }
 
+    #[allow(dead_code)]
     fn generate_random_vector(size: usize) -> Vector<K> {
         let mut rng = rand::thread_rng();
         let data: Vec<K> = (0..size).map(|_| rng.gen()).collect();
         Vector::new(data, Some(size))
     }
 
+    #[allow(dead_code)]
     fn generate_random_operation(&mut self) {
         let mut rng = rand::thread_rng();
         let operation = rng.gen_range(0..3);
@@ -152,6 +154,7 @@ where
         println!("{}\n\n", self);
     }
 
+    #[allow(dead_code)]
     pub fn run_random_tests(&mut self, num_tests: usize) {
         for _ in 0..num_tests {
             self.generate_random_operation();

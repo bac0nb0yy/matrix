@@ -138,6 +138,7 @@ where
             .for_each(|row| row.iter_mut().for_each(|v| *v = *v * a));
     }
 
+    #[allow(dead_code)]
     fn generate_random_matrix(cols: usize, rows: usize) -> Matrix<K> {
         let mut rng = rand::thread_rng();
         let data: Vec<Vec<K>> = (0..rows)
@@ -146,6 +147,7 @@ where
         Matrix::new(data, Some(rows), Some(cols))
     }
 
+    #[allow(dead_code)]
     fn generate_random_operation(&mut self) {
         let mut rng = rand::thread_rng();
         let operation = rng.gen_range(0..3);
@@ -174,6 +176,7 @@ where
         println!("{}\n\n", self);
     }
 
+    #[allow(dead_code)]
     pub fn run_random_tests(&mut self, num_tests: usize) {
         for _ in 0..num_tests {
             self.generate_random_operation();
