@@ -3,8 +3,6 @@ name = "ex00"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
-
 [[bin]]
-name = "ex00"
+name = "bin"
 path = "main.rs"
