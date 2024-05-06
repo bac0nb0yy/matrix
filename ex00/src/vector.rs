@@ -99,7 +99,7 @@ where
     }
 
     fn check_size(&self, v: &Vector<K>) {
-        assert!(self.size == v.size, "Vector size mismatch");
+        assert_eq!(self.size, v.size, "Vector size mismatch");
     }
 
     fn new(data: Vec<K>, size: Option<usize>) -> Self {

@@ -1,12 +1,9 @@
 [package]
-name = "basic_op"
+name = "ex01"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 rand = "0.8.4"
 termcolor = "1.1"
-
-[[bin]]
-name = "basic_op"
-path = "src/main.rs"
+num-traits = "0.2"
