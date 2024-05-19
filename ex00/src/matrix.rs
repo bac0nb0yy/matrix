@@ -193,7 +193,7 @@ where
 
 impl<K, const M: usize, const N: usize> From<[[K; N]; M]> for Matrix<K>
 where
-    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display,
+    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display + Copy,
 {
     fn from(array: [[K; N]; M]) -> Self {
         Matrix::new(

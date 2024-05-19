@@ -156,7 +156,7 @@ where
 
 impl<K, const N: usize> From<[K; N]> for Vector<K>
 where
-    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display + Default,
+    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display + Default + Copy,
 {
     fn from(array: [K; N]) -> Self {
         Vector::new(Vec::from(array), Some(N))
