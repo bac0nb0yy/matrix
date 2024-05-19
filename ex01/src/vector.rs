@@ -1,6 +1,5 @@
-use rand::distributions::Standard;
 use std::default::Default;
-use std::fmt;
+use std::fmt::{Display, Formatter, Result};
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Debug, Clone)]
@@ -9,8 +8,8 @@ pub struct Vector<K> {
     size: usize,
 }
 
-impl<K: fmt::Display> fmt::Display for Vector<K> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl<K: Display> Display for Vector<K> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         for item in &self.data[..self.size] {
             writeln!(f, "[{:.3}]", item)?;
         }
@@ -18,10 +17,8 @@ impl<K: fmt::Display> fmt::Display for Vector<K> {
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + fmt::Display> Add
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Add
     for Vector<K>
-where
-    Standard: rand::distributions::Distribution<K>,
 {
     type Output = Self;
 
@@ -53,10 +50,8 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + fmt::Display> Sub
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Sub
     for Vector<K>
-where
-    Standard: rand::distributions::Distribution<K>,
 {
     type Output = Self;
 
@@ -88,10 +83,8 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + fmt::Display> Mul
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Mul
     for Vector<K>
-where
-    Standard: rand::distributions::Distribution<K>,
 {
     type Output = Self;
 
@@ -120,21 +113,8 @@ where
 
 impl<K> Vector<K>
 where
-    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + fmt::Display + Default,
-    Standard: rand::distributions::Distribution<K>,
+    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display + Default,
 {
-    fn operate<F>(&mut self, v: &Vector<K>, op: F)
-    where
-        F: Fn(K, K) -> K,
-    {
-        self.check_size(v);
-
-        self.data
-            .iter_mut()
-            .zip(&v.data)
-            .for_each(|(a, b)| *a = op(*a, *b));
-    }
-
     fn check_size(&self, v: &Vector<K>) {
         assert_eq!(self.size, v.size, "Vector size mismatch");
     }
@@ -142,21 +122,6 @@ where
     pub fn new(data: Vec<K>, size: Option<usize>) -> Self {
         let size: usize = size.unwrap_or(data.len());
         Vector { data, size }
-    }
-
-    #[allow(dead_code)]
-    pub fn add(&mut self, v: &Vector<K>) {
-        self.operate(v, |a, b| a + b);
-    }
-
-    #[allow(dead_code)]
-    pub fn sub(&mut self, v: &Vector<K>) {
-        self.operate(v, |a, b| a - b);
-    }
-
-    #[allow(dead_code)]
-    pub fn scl(&mut self, a: K) {
-        self.data.iter_mut().for_each(|v| *v = *v * a);
     }
 
     pub fn linear_combination(u: &[Vector<K>], coefs: &[K]) -> Vector<K> {
@@ -191,8 +156,7 @@ where
 
 impl<K, const N: usize> From<[K; N]> for Vector<K>
 where
-    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + fmt::Display + Default,
-    Standard: rand::distributions::Distribution<K>,
+    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display + Default,
 {
     fn from(array: [K; N]) -> Self {
         Vector::new(Vec::from(array), Some(N))
