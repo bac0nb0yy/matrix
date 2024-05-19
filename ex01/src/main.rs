@@ -2,6 +2,107 @@ mod vector;
 
 use vector::Vector;
 
+#[cfg(test)]
+mod vectors {
+    use super::*;
+    use rand::prelude::*;
+    use std::panic::catch_unwind;
+
+    const NB_TESTCASE_VECTORS: usize = 100;
+    const THRESHOLD: f64 = 1e-10;
+
+    fn generate_random_vector(size: usize) -> Vec<f64> {
+        let mut rng = rand::thread_rng();
+        let data: Vec<f64> = (0..size).map(|_| rng.gen()).collect();
+        Vec::from(data)
+    }
+
+    fn random_testcases_linear_combination() {
+        for _ in 0..NB_TESTCASE_VECTORS {
+            let mut rng = rand::thread_rng();
+            let num_vectors = rng.gen_range(1..=5);
+            let size = rng.gen_range(1..=10);
+
+            let mut my_vectors: Vec<Vector<f64>> = Vec::new();
+            let mut real_vectors: Vec<Vec<f64>> = Vec::new();
+            let mut coefs: Vec<f64> = Vec::new();
+
+            for _ in 0..num_vectors {
+                let vector = generate_random_vector(size);
+                let coef = rng.gen::<f64>();
+                my_vectors.push(Vector::new(Vec::from(vector.clone()), Some(size)));
+                real_vectors.push(vector);
+                coefs.push(coef);
+            }
+
+            let my_results = Vector::linear_combination(&my_vectors, &coefs);
+            let real_results: Vec<f64> = real_vectors.iter().zip(&coefs).fold(
+                vec![0.0; real_vectors[0].len()],
+                |mut acc, (vector, &coef)| {
+                    for (a, &b) in acc.iter_mut().zip(vector.iter()) {
+                        *a += coef * b;
+                    }
+                    acc
+                },
+            );
+
+            for (i, &value) in my_results.get_data().iter().enumerate() {
+                assert!(
+                    (value - real_results[i]).abs() < THRESHOLD,
+                    "Mismatch at index {}: {} != {}",
+                    i,
+                    value,
+                    real_results[i]
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn vectors_linear_combination() {
+        random_testcases_linear_combination();
+    }
+
+    fn generate_mismatched_coefs_vectors() -> (Vec<Vector<f64>>, Vec<f64>) {
+        let mut rng = rand::thread_rng();
+        let num_vectors = rng.gen_range(1..=5);
+        let size = rng.gen_range(1..=10);
+
+        let mut my_vectors: Vec<Vector<f64>> = Vec::new();
+        let mut coefs: Vec<f64> = Vec::new();
+
+        for _ in 0..num_vectors {
+            let vector = generate_random_vector(size);
+            let coef = rng.gen::<f64>();
+            my_vectors.push(Vector::new(Vec::from(vector.clone()), Some(size)));
+            coefs.push(coef);
+        }
+
+        for _ in 0..rng.gen_range(1..=5) {
+            let vector = generate_random_vector(size);
+            my_vectors.push(Vector::new(Vec::from(vector.clone()), Some(size)));
+        }
+
+        (my_vectors, coefs)
+    }
+
+    #[test]
+    fn vector_bad_size() {
+        for _ in 0..NB_TESTCASE_VECTORS {
+            let (my_vectors, coefs) = generate_mismatched_coefs_vectors();
+
+            let result = catch_unwind(|| {
+                Vector::linear_combination(&my_vectors, &coefs);
+            });
+
+            assert!(
+                result.is_err(),
+                "Adding mismatched number of vectors compared to number of coefs should panic"
+            );
+        }
+    }
+}
+
 fn main() {
     let e1 = Vector::from([1., 0., 0.]);
     let e2 = Vector::from([0., 1., 0.]);
