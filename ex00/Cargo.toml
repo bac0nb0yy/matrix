@@ -6,8 +6,3 @@ edition = "2021"
 [dependencies]
 rand = "0.8.4"
 nalgebra = "0.29.0"
-termcolor = "1.1.2"
-
-[[bin]]
-name = "basic_op"
-path = "src/main.rs"
