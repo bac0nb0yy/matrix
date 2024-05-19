@@ -1,6 +1,5 @@
-use rand::distributions::Standard;
 use std::default::Default;
-use std::fmt;
+use std::fmt::{Display, Formatter, Result};
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Debug, Clone)]
@@ -9,8 +8,8 @@ pub struct Vector<K> {
     size: usize,
 }
 
-impl<K: fmt::Display> fmt::Display for Vector<K> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl<K: Display> Display for Vector<K> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         for item in &self.data[..self.size] {
             writeln!(f, "[{:.3}]", item)?;
         }
@@ -18,10 +17,8 @@ impl<K: fmt::Display> fmt::Display for Vector<K> {
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + fmt::Display> Add
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Add
     for Vector<K>
-where
-    Standard: rand::distributions::Distribution<K>,
 {
     type Output = Self;
 
@@ -53,10 +50,8 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + fmt::Display> Sub
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Sub
     for Vector<K>
-where
-    Standard: rand::distributions::Distribution<K>,
 {
     type Output = Self;
 
@@ -88,10 +83,8 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + fmt::Display> Mul
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Mul
     for Vector<K>
-where
-    Standard: rand::distributions::Distribution<K>,
 {
     type Output = Self;
 
@@ -120,8 +113,7 @@ where
 
 impl<K> Vector<K>
 where
-    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + fmt::Display,
-    Standard: rand::distributions::Distribution<K>,
+    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display,
 {
     fn operate<F>(&mut self, v: &Vector<K>, op: F)
     where
@@ -169,8 +161,7 @@ where
 
 impl<K, const N: usize> From<[K; N]> for Vector<K>
 where
-    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + fmt::Display,
-    Standard: rand::distributions::Distribution<K>,
+    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display,
 {
     fn from(array: [K; N]) -> Self {
         Vector::new(Vec::from(array), Some(N))
