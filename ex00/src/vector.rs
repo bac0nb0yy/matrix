@@ -1,9 +1,9 @@
 use rand::distributions::Standard;
-use rand::prelude::*;
 use std::default::Default;
 use std::fmt;
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
+#[derive(Debug, Clone)]
 pub struct Vector<K> {
     data: Vec<K>,
     size: usize,
@@ -39,6 +39,20 @@ where
     }
 }
 
+impl<K> AddAssign<Vector<K>> for Vector<K>
+where
+    K: AddAssign + Copy,
+{
+    fn add_assign(&mut self, rhs: Vector<K>) {
+        assert_eq!(self.size, rhs.size, "Vector size mismatch");
+
+        self.data
+            .iter_mut()
+            .zip(&rhs.data)
+            .for_each(|(a, &b)| *a += b);
+    }
+}
+
 impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + fmt::Display> Sub
     for Vector<K>
 where
@@ -57,6 +71,20 @@ where
             .collect();
 
         Vector::new(new_vector, Some(self.size))
+    }
+}
+
+impl<K> SubAssign<Vector<K>> for Vector<K>
+where
+    K: SubAssign + Copy,
+{
+    fn sub_assign(&mut self, rhs: Vector<K>) {
+        assert_eq!(self.size, rhs.size, "Vector size mismatch");
+
+        self.data
+            .iter_mut()
+            .zip(&rhs.data)
+            .for_each(|(a, &b)| *a -= b);
     }
 }
 
@@ -81,6 +109,15 @@ where
     }
 }
 
+impl<K> MulAssign<K> for Vector<K>
+where
+    K: MulAssign + Copy,
+{
+    fn mul_assign(&mut self, scl: K) {
+        self.data.iter_mut().for_each(|a| *a *= scl);
+    }
+}
+
 impl<K> Vector<K>
 where
     K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + fmt::Display,
@@ -102,7 +139,7 @@ where
         assert_eq!(self.size, v.size, "Vector size mismatch");
     }
 
-    fn new(data: Vec<K>, size: Option<usize>) -> Self {
+    pub fn new(data: Vec<K>, size: Option<usize>) -> Self {
         let size: usize = size.unwrap_or(data.len());
         Vector { data, size }
     }
@@ -120,45 +157,13 @@ where
     }
 
     #[allow(dead_code)]
-    fn generate_random_vector(size: usize) -> Vector<K> {
-        let mut rng = rand::thread_rng();
-        let data: Vec<K> = (0..size).map(|_| rng.gen()).collect();
-        Vector::new(data, Some(size))
+    pub fn get_data(&self) -> &Vec<K> {
+        &self.data
     }
 
     #[allow(dead_code)]
-    fn generate_random_operation(&mut self) {
-        let mut rng = rand::thread_rng();
-        let operation = rng.gen_range(0..3);
-        let size = self.size;
-
-        print!("\n{}", self);
-        match operation {
-            0 => {
-                let random_vector = Self::generate_random_vector(size);
-                println!("+\n{}=", random_vector);
-                self.add(&random_vector);
-            }
-            1 => {
-                let random_vector = Self::generate_random_vector(size);
-                println!("-\n{}=", random_vector);
-                self.sub(&random_vector);
-            }
-            2 => {
-                let scalar: K = rng.gen();
-                println!("*\n{}\n=", scalar);
-                self.scl(scalar);
-            }
-            _ => unreachable!(),
-        }
-        println!("{}\n\n", self);
-    }
-
-    #[allow(dead_code)]
-    pub fn run_random_tests(&mut self, num_tests: usize) {
-        for _ in 0..num_tests {
-            self.generate_random_operation();
-        }
+    pub fn get_size(&self) -> usize {
+        self.size
     }
 }
 

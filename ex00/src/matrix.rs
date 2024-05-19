@@ -1,9 +1,9 @@
 use rand::distributions::Standard;
-use rand::prelude::*;
 use std::default::Default;
 use std::fmt;
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
+#[derive(Debug, Clone)]
 pub struct Matrix<K> {
     data: Vec<Vec<K>>,
     rows: usize,
@@ -47,6 +47,23 @@ where
     }
 }
 
+impl<K> AddAssign<Matrix<K>> for Matrix<K>
+where
+    K: AddAssign + Copy,
+{
+    fn add_assign(&mut self, rhs: Matrix<K>) {
+        assert!(
+            self.rows == rhs.rows && self.cols == rhs.cols,
+            "Matrix size mismatch"
+        );
+
+        self.data
+            .iter_mut()
+            .zip(&rhs.data)
+            .for_each(|(row1, row2)| row1.iter_mut().zip(row2).for_each(|(a, &b)| *a += b));
+    }
+}
+
 impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + fmt::Display> Sub
     for Matrix<K>
 where
@@ -68,6 +85,23 @@ where
     }
 }
 
+impl<K> SubAssign<Matrix<K>> for Matrix<K>
+where
+    K: SubAssign + Copy,
+{
+    fn sub_assign(&mut self, rhs: Matrix<K>) {
+        assert!(
+            self.rows == rhs.rows && self.cols == rhs.cols,
+            "Matrix size mismatch"
+        );
+
+        self.data
+            .iter_mut()
+            .zip(&rhs.data)
+            .for_each(|(row1, row2)| row1.iter_mut().zip(row2).for_each(|(a, &b)| *a -= b));
+    }
+}
+
 impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + fmt::Display> Mul
     for Matrix<K>
 where
@@ -86,6 +120,17 @@ where
             .collect();
 
         Matrix::new(new_matrix, Some(self.rows), Some(self.cols))
+    }
+}
+
+impl<K> MulAssign<K> for Matrix<K>
+where
+    K: MulAssign + Copy,
+{
+    fn mul_assign(&mut self, scl: K) {
+        self.data
+            .iter_mut()
+            .for_each(|row| row.iter_mut().for_each(|v| *v *= scl));
     }
 }
 
@@ -139,48 +184,18 @@ where
     }
 
     #[allow(dead_code)]
-    fn generate_random_matrix(cols: usize, rows: usize) -> Matrix<K> {
-        let mut rng = rand::thread_rng();
-        let data: Vec<Vec<K>> = (0..rows)
-            .map(|_| (0..cols).map(|_| rng.gen()).collect())
-            .collect();
-        Matrix::new(data, Some(rows), Some(cols))
+    pub fn get_data(&self) -> &Vec<Vec<K>> {
+        &self.data
     }
 
     #[allow(dead_code)]
-    fn generate_random_operation(&mut self) {
-        let mut rng = rand::thread_rng();
-        let operation = rng.gen_range(0..3);
-        let rows = self.rows;
-        let cols = self.cols;
-
-        print!("\n{}", self);
-        match operation {
-            0 => {
-                let random_matrix = Self::generate_random_matrix(rows, cols);
-                println!("+\n{}=", random_matrix);
-                self.add(&random_matrix);
-            }
-            1 => {
-                let random_matrix = Self::generate_random_matrix(rows, cols);
-                println!("-\n{}=", random_matrix);
-                self.sub(&random_matrix);
-            }
-            2 => {
-                let scalar: K = rng.gen();
-                println!("*\n{}\n=", scalar);
-                self.scl(scalar);
-            }
-            _ => unreachable!(),
-        }
-        println!("{}\n\n", self);
+    pub fn get_rows(&self) -> usize {
+        self.rows
     }
 
     #[allow(dead_code)]
-    pub fn run_random_tests(&mut self, num_tests: usize) {
-        for _ in 0..num_tests {
-            self.generate_random_operation();
-        }
+    pub fn get_cols(&self) -> usize {
+        self.cols
     }
 }
 

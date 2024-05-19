@@ -17,6 +17,7 @@ fn main() {
     // [10.]
     // [-2.]
     // [0.5]
+
     println!("{}", Vector::linear_combination(&[v1, v2], &[10., -2.]));
     // [10.]
     // [0.]
