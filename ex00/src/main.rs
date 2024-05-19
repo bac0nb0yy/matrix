@@ -7,6 +7,7 @@ use vector::Vector;
 #[cfg(test)]
 mod vectors {
     use super::*;
+    use approx::assert_abs_diff_eq;
     use nalgebra::DVector;
     use rand::prelude::*;
     use std::panic::catch_unwind;
@@ -68,13 +69,7 @@ mod vectors {
             }
 
             for (i, &value) in my_vector.get_data().iter().enumerate() {
-                assert!(
-                    (value - nalgebra_vector[i]).abs() < THRESHOLD,
-                    "Mismatch at index {}: {} != {}",
-                    i,
-                    value,
-                    nalgebra_vector[i]
-                );
+                assert_abs_diff_eq!(value, nalgebra_vector[i], epsilon = THRESHOLD);
             }
         }
     }
@@ -121,6 +116,7 @@ mod vectors {
 #[cfg(test)]
 mod matrices {
     use super::*;
+    use approx::assert_abs_diff_eq;
     use nalgebra::DMatrix;
     use rand::prelude::*;
     use std::panic::catch_unwind;
@@ -198,13 +194,7 @@ mod matrices {
             }
 
             for (i, &value) in flatten(my_matrix.get_data()).iter().enumerate() {
-                assert!(
-                    (value - nalgebra_matrix[i]).abs() < THRESHOLD,
-                    "Mismatch at index {}: {} != {}",
-                    i,
-                    value,
-                    nalgebra_matrix[i]
-                );
+                assert_abs_diff_eq!(value, nalgebra_matrix[i], epsilon = THRESHOLD);
             }
         }
     }

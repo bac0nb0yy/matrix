@@ -16,22 +16,23 @@ where
 #[cfg(test)]
 mod vectors {
     use super::*;
-    use nalgebra::{DVector, DefaultAllocator, Scalar};
+    use approx::assert_abs_diff_eq;
+    use nalgebra::{allocator::Allocator, DVector, DefaultAllocator, DimName, Scalar, U3, U5};
     use rand::prelude::*;
 
     const NB_TESTCASE_VECTORS: usize = 100;
     const THRESHOLD: f64 = 1e-10;
 
-    fn test_lerp<N: Scalar + Copy + nalgebra::DimName>(size: usize)
+    fn test_lerp<N: Scalar + DimName + Copy>(size: usize)
     where
-        DefaultAllocator: nalgebra::allocator::Allocator<f64, N>,
+        DefaultAllocator: Allocator<f64, N>,
     {
         let mut rng = rand::thread_rng();
         let v1 = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
         let v2 = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
 
-        let my_v1 = Vector::new(Vec::from(v1.clone()), Some(size));
-        let my_v2 = Vector::new(Vec::from(v2.clone()), Some(size));
+        let my_v1 = Vector::new(v1.clone(), Some(size));
+        let my_v2 = Vector::new(v2.clone(), Some(size));
         let nalgebra_v1 = DVector::<f64>::from_vec(v1);
         let nalgebra_v2 = DVector::<f64>::from_vec(v2);
 
@@ -41,27 +42,21 @@ mod vectors {
         let nalgebra_result = nalgebra_v1.lerp(&nalgebra_v2, t);
 
         for (i, &value) in my_result.get_data().iter().enumerate() {
-            assert!(
-                (value - nalgebra_result[i]).abs() < THRESHOLD,
-                "Mismatch at index {}: {} != {}",
-                i,
-                value,
-                nalgebra_result[i]
-            );
+            assert_abs_diff_eq!(value, nalgebra_result[i], epsilon = THRESHOLD);
         }
     }
 
     #[test]
     fn test_lerp_vector3() {
         for _ in 0..NB_TESTCASE_VECTORS {
-            test_lerp::<nalgebra::U3>(3);
+            test_lerp::<U3>(3);
         }
     }
 
     #[test]
     fn test_lerp_vector5() {
         for _ in 0..NB_TESTCASE_VECTORS {
-            test_lerp::<nalgebra::U5>(5);
+            test_lerp::<U5>(5);
         }
     }
 }

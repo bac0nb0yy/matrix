@@ -17,9 +17,7 @@ impl<K: Display> Display for Vector<K> {
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Add
-    for Vector<K>
-{
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Add for Vector<K> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -50,9 +48,7 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Sub
-    for Vector<K>
-{
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Sub for Vector<K> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -83,9 +79,7 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Mul
-    for Vector<K>
-{
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Mul for Vector<K> {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self::Output {
@@ -113,7 +107,7 @@ where
 
 impl<K> Vector<K>
 where
-    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display,
+    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default,
 {
     fn operate<F>(&mut self, v: &Vector<K>, op: F)
     where
@@ -161,7 +155,7 @@ where
 
 impl<K, const N: usize> From<[K; N]> for Vector<K>
 where
-    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display + Copy,
+    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default,
 {
     fn from(array: [K; N]) -> Self {
         Vector::new(Vec::from(array), Some(N))

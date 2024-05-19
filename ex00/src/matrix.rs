@@ -25,9 +25,7 @@ impl<K: Display> Display for Matrix<K> {
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Add
-    for Matrix<K>
-{
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Add for Matrix<K> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -61,9 +59,7 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Sub
-    for Matrix<K>
-{
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Sub for Matrix<K> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -97,9 +93,7 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Mul
-    for Matrix<K>
-{
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Mul for Matrix<K> {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self::Output {
@@ -129,7 +123,7 @@ where
 
 impl<K> Matrix<K>
 where
-    K: Copy + Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display,
+    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default,
 {
     fn operate<F>(&mut self, v: &Matrix<K>, op: F)
     where
@@ -193,7 +187,7 @@ where
 
 impl<K, const M: usize, const N: usize> From<[[K; N]; M]> for Matrix<K>
 where
-    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Display + Copy,
+    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default,
 {
     fn from(array: [[K; N]; M]) -> Self {
         Matrix::new(

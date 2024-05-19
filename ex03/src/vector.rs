@@ -17,9 +17,7 @@ impl<K: Display> Display for Vector<K> {
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Add
-    for Vector<K>
-{
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Add for Vector<K> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -50,9 +48,7 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Sub
-    for Vector<K>
-{
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Sub for Vector<K> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -83,9 +79,7 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default + Display> Mul
-    for Vector<K>
-{
+impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Mul for Vector<K> {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self::Output {
@@ -111,9 +105,7 @@ where
     }
 }
 
-impl<K: Mul<Output = K> + Sub<Output = K> + Add<Output = K> + Copy + Default + Display> Mul<K>
-    for Vector<K>
-{
+impl<K: Mul<Output = K> + Sub<Output = K> + Add<Output = K> + Copy + Default> Mul<K> for Vector<K> {
     type Output = Self;
 
     fn mul(self, scalar: K) -> Self::Output {

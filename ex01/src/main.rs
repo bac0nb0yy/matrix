@@ -5,17 +5,12 @@ use vector::Vector;
 #[cfg(test)]
 mod vectors {
     use super::*;
+    use approx::assert_abs_diff_eq;
     use rand::prelude::*;
     use std::panic::catch_unwind;
 
     const NB_TESTCASE_VECTORS: usize = 100;
     const THRESHOLD: f64 = 1e-10;
-
-    fn generate_random_vector(size: usize) -> Vec<f64> {
-        let mut rng = rand::thread_rng();
-        let data: Vec<f64> = (0..size).map(|_| rng.gen()).collect();
-        Vec::from(data)
-    }
 
     fn random_testcases_linear_combination() {
         for _ in 0..NB_TESTCASE_VECTORS {
@@ -28,15 +23,15 @@ mod vectors {
             let mut coefs: Vec<f64> = Vec::new();
 
             for _ in 0..num_vectors {
-                let vector = generate_random_vector(size);
+                let vector = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
                 let coef = rng.gen::<f64>();
-                my_vectors.push(Vector::new(Vec::from(vector.clone()), Some(size)));
+                my_vectors.push(Vector::new(vector.clone(), Some(size)));
                 real_vectors.push(vector);
                 coefs.push(coef);
             }
 
             let my_results = Vector::linear_combination(&my_vectors, &coefs);
-            let real_results: Vec<f64> = real_vectors.iter().zip(&coefs).fold(
+            let nalgebra_results: Vec<f64> = real_vectors.iter().zip(&coefs).fold(
                 vec![0.0; real_vectors[0].len()],
                 |mut acc, (vector, &coef)| {
                     for (a, &b) in acc.iter_mut().zip(vector.iter()) {
@@ -47,13 +42,7 @@ mod vectors {
             );
 
             for (i, &value) in my_results.get_data().iter().enumerate() {
-                assert!(
-                    (value - real_results[i]).abs() < THRESHOLD,
-                    "Mismatch at index {}: {} != {}",
-                    i,
-                    value,
-                    real_results[i]
-                );
+                assert_abs_diff_eq!(value, nalgebra_results[i], epsilon = THRESHOLD);
             }
         }
     }
@@ -72,14 +61,14 @@ mod vectors {
         let mut coefs: Vec<f64> = Vec::new();
 
         for _ in 0..num_vectors {
-            let vector = generate_random_vector(size);
+            let vector = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
             let coef = rng.gen::<f64>();
             my_vectors.push(Vector::new(Vec::from(vector.clone()), Some(size)));
             coefs.push(coef);
         }
 
         for _ in 0..rng.gen_range(1..=5) {
-            let vector = generate_random_vector(size);
+            let vector = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
             my_vectors.push(Vector::new(Vec::from(vector.clone()), Some(size)));
         }
 

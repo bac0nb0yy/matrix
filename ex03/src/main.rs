@@ -6,15 +6,15 @@ use vector::Vector;
 mod dot_product_tests {
     use super::*;
     use approx::assert_abs_diff_eq;
-    use nalgebra::{DVector, DefaultAllocator, Scalar, U3, U5};
+    use nalgebra::{allocator::Allocator, DVector, DefaultAllocator, DimName, Scalar, U3, U5};
     use rand::prelude::*;
 
     const NB_TESTCASE_VECTORS: usize = 100;
     const THRESHOLD: f64 = 1e-10;
 
-    fn test_dot<N: Scalar + Copy + nalgebra::DimName>(size: usize)
+    fn test_dot<N: Scalar + DimName + Copy>(size: usize)
     where
-        DefaultAllocator: nalgebra::allocator::Allocator<f64, N>,
+        DefaultAllocator: Allocator<f64, N>,
     {
         let mut rng = rand::thread_rng();
         let v1 = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
