@@ -13,7 +13,7 @@ impl<K: Display> Display for Matrix<K> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         for row in &self.data[..self.rows] {
             write!(f, "[")?;
-            for (i, item) in row.iter().take(self.cols).enumerate() {
+            for (i, item) in row.iter().enumerate() {
                 if i != 0 {
                     write!(f, ", ")?;
                 }
