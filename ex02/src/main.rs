@@ -17,16 +17,13 @@ where
 mod vectors {
     use super::*;
     use approx::assert_abs_diff_eq;
-    use nalgebra::{allocator::Allocator, DVector, DefaultAllocator, DimName, Scalar, U3, U5};
+    use nalgebra::DVector;
     use rand::prelude::*;
 
     const NB_TESTCASE_VECTORS: usize = 100;
     const THRESHOLD: f64 = 1e-10;
 
-    fn test_lerp<N: Scalar + DimName + Copy>(size: usize)
-    where
-        DefaultAllocator: Allocator<f64, N>,
-    {
+    fn test_lerp(size: usize) {
         let mut rng = rand::thread_rng();
         let v1 = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
         let v2 = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
@@ -49,14 +46,22 @@ mod vectors {
     #[test]
     fn test_lerp_vector3() {
         for _ in 0..NB_TESTCASE_VECTORS {
-            test_lerp::<U3>(3);
+            test_lerp(3);
         }
     }
 
     #[test]
     fn test_lerp_vector5() {
         for _ in 0..NB_TESTCASE_VECTORS {
-            test_lerp::<U5>(5);
+            test_lerp(5);
+        }
+    }
+
+    #[test]
+    fn test_lerp_random_size_vector() {
+        for _ in 0..NB_TESTCASE_VECTORS {
+            let mut rng = rand::thread_rng();
+            test_lerp(rng.gen_range(1..=10));
         }
     }
 }
