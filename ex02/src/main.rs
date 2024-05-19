@@ -14,7 +14,7 @@ where
 }
 
 #[cfg(test)]
-mod tests {
+mod vectors {
     use super::*;
     use nalgebra::{DVector, DefaultAllocator, Scalar};
     use rand::prelude::*;
