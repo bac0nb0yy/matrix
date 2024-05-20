@@ -1,13 +1,10 @@
+mod field;
 mod vector;
 
+use field::*;
 use vector::Vector;
 
-use std::ops::{Add, Mul, Sub};
-
-fn angle_cos<K>(u: &Vector<K>, v: &Vector<K>) -> f32
-where
-    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Into<f64> + Copy + Default,
-{
+fn angle_cos<K: Field>(u: &Vector<K>, v: &Vector<K>) -> f32 {
     (u.dot(v).into() / (u.norm() * v.norm())) as f32
 }
 
@@ -27,11 +24,11 @@ mod tests {
             let v1 = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
             let v2 = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
 
-            let my_v1 = Vector::new(v1.clone(), Some(size));
-            let my_v2 = Vector::new(v2.clone(), Some(size));
+            let my_v1 = Vector::new(v1);
+            let my_v2 = Vector::new(v2);
 
-            let nalgebra_v1 = DVector::<f64>::from_vec(v1);
-            let nalgebra_v2 = DVector::<f64>::from_vec(v2);
+            let nalgebra_v1 = DVector::<f64>::from_vec(my_v1.data().clone());
+            let nalgebra_v2 = DVector::<f64>::from_vec(my_v2.data().clone());
 
             let cos_angle = angle_cos(&my_v1, &my_v2);
             let expected_cos_angle = nalgebra_v1.normalize().dot(&nalgebra_v2.normalize());

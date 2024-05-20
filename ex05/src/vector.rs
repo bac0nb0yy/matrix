@@ -1,46 +1,53 @@
-use std::default::Default;
+use crate::field::*;
+
 use std::fmt::{Display, Formatter, Result};
-use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[derive(Debug, Clone)]
-pub struct Vector<K> {
+pub struct Vector<K: Field> {
     data: Vec<K>,
     size: usize,
 }
 
-impl<K: Display> Display for Vector<K> {
+impl<K: Field + Display> Display for Vector<K> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        for item in &self.data[..self.size] {
-            writeln!(f, "[{:.3}]", item)?;
+        write!(f, "[")?;
+        for (index, item) in self.data.iter().enumerate() {
+            if index != 0 {
+                write!(f, ", ")?;
+            }
+            write!(f, "{:.3}", item)?;
         }
+        write!(f, "]")?;
         Ok(())
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Add for Vector<K>
-where
-    f64: From<K>,
-{
+impl<K: Field> Add for Vector<K> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
         self.check_size(&rhs);
 
-        let new_vector: Vec<K> = self
-            .data
-            .iter()
-            .zip(&rhs.data)
-            .map(|(a, b)| *a + *b)
-            .collect();
-
-        Vector::new(new_vector, Some(self.size))
+        Vector::new(
+            self.data
+                .iter()
+                .zip(&rhs.data)
+                .map(|(a, b)| *a + *b)
+                .collect(),
+        )
     }
 }
 
-impl<K> AddAssign<Vector<K>> for Vector<K>
-where
-    K: AddAssign + Copy,
-{
+impl<K: Field> Add<K> for Vector<K> {
+    type Output = Self;
+
+    fn add(self, rhs: K) -> Self::Output {
+        Vector::new(self.data.iter().map(|&a| a + rhs).collect())
+    }
+}
+
+impl<K: Field> AddAssign<Vector<K>> for Vector<K> {
     fn add_assign(&mut self, rhs: Vector<K>) {
         assert_eq!(self.size, rhs.size, "Vector size mismatch");
 
@@ -51,30 +58,37 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Sub for Vector<K>
-where
-    f64: From<K>,
-{
+impl<K: Field> AddAssign<K> for Vector<K> {
+    fn add_assign(&mut self, rhs: K) {
+        self.data.iter_mut().for_each(|a| *a += rhs);
+    }
+}
+
+impl<K: Field> Sub for Vector<K> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
         self.check_size(&rhs);
 
-        let new_vector: Vec<K> = self
-            .data
-            .iter()
-            .zip(&rhs.data)
-            .map(|(a, b)| *a - *b)
-            .collect();
-
-        Vector::new(new_vector, Some(self.size))
+        Vector::new(
+            self.data
+                .iter()
+                .zip(&rhs.data)
+                .map(|(a, b)| *a - *b)
+                .collect(),
+        )
     }
 }
 
-impl<K> SubAssign<Vector<K>> for Vector<K>
-where
-    K: SubAssign + Copy,
-{
+impl<K: Field> Sub<K> for Vector<K> {
+    type Output = Self;
+
+    fn sub(self, rhs: K) -> Self::Output {
+        Vector::new(self.data.iter().map(|&a| a - rhs).collect())
+    }
+}
+
+impl<K: Field> SubAssign<Vector<K>> for Vector<K> {
     fn sub_assign(&mut self, rhs: Vector<K>) {
         assert_eq!(self.size, rhs.size, "Vector size mismatch");
 
@@ -85,56 +99,104 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Mul for Vector<K>
-where
-    f64: From<K>,
-{
-    type Output = Self;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        self.check_size(&rhs);
-
-        let new_vector: Vec<K> = self
-            .data
-            .iter()
-            .zip(&rhs.data)
-            .map(|(a, b)| *a * *b)
-            .collect();
-
-        Vector::new(new_vector, Some(self.size))
+impl<K: Field> SubAssign<K> for Vector<K> {
+    fn sub_assign(&mut self, rhs: K) {
+        self.data.iter_mut().for_each(|a| *a -= rhs);
     }
 }
 
-impl<K> MulAssign<K> for Vector<K>
-where
-    K: MulAssign + Copy,
-{
+impl<K: Field> Mul for Vector<K> {
+    type Output = K;
+
+    fn mul(self, rhs: Vector<K>) -> K {
+        self.dot(&rhs)
+    }
+}
+
+impl<K: Field> Mul<K> for Vector<K> {
+    type Output = Self;
+
+    fn mul(self, scalar: K) -> Self::Output {
+        Vector::new(self.data.iter().map(|&a| a * scalar).collect())
+    }
+}
+
+impl<K: Field> MulAssign<Vector<K>> for Vector<K> {
+    fn mul_assign(&mut self, rhs: Vector<K>) {
+        assert_eq!(self.size, rhs.size, "Vector size mismatch");
+
+        self.data
+            .iter_mut()
+            .zip(&rhs.data)
+            .for_each(|(a, &b)| *a *= b);
+    }
+}
+
+impl<K: Field> MulAssign<K> for Vector<K> {
     fn mul_assign(&mut self, scl: K) {
         self.data.iter_mut().for_each(|a| *a *= scl);
     }
 }
 
-impl<K: Mul<Output = K> + Sub<Output = K> + Add<Output = K> + Into<f64> + Copy + Default> Mul<K>
-    for Vector<K>
-{
+impl<K: Field> Div for Vector<K> {
     type Output = Self;
 
-    fn mul(self, scalar: K) -> Self::Output {
-        let new_vector: Vec<K> = self.data.iter().map(|&a| a * scalar).collect();
-        Vector::new(new_vector, Some(self.size))
+    fn div(self, rhs: Self) -> Self::Output {
+        self.check_size(&rhs);
+
+        Vector::new(
+            self.data
+                .iter()
+                .zip(&rhs.data)
+                .map(|(a, b)| *a / *b)
+                .collect(),
+        )
     }
 }
 
-impl<K> Vector<K>
-where
-    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Into<f64> + Copy + Default,
-{
+impl<K: Field> Div<K> for Vector<K> {
+    type Output = Self;
+
+    fn div(self, scalar: K) -> Self::Output {
+        Vector::new(self.data.iter().map(|&a| a / scalar).collect())
+    }
+}
+
+impl<K: Field> DivAssign<Vector<K>> for Vector<K> {
+    fn div_assign(&mut self, rhs: Vector<K>) {
+        assert_eq!(self.size, rhs.size, "Vector size mismatch");
+
+        self.data
+            .iter_mut()
+            .zip(&rhs.data)
+            .for_each(|(a, &b)| *a /= b);
+    }
+}
+
+impl<K: Field> DivAssign<K> for Vector<K> {
+    fn div_assign(&mut self, rhs: K) {
+        self.data.iter_mut().for_each(|a| *a /= rhs);
+    }
+}
+
+impl<K: Field> Neg for Vector<K> {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Vector {
+            data: self.data.into_iter().map(|x| -x).collect(),
+            size: self.size,
+        }
+    }
+}
+
+impl<K: Field> Vector<K> {
     fn check_size(&self, v: &Vector<K>) {
         assert_eq!(self.size, v.size, "Vector size mismatch");
     }
 
-    pub fn new(data: Vec<K>, size: Option<usize>) -> Self {
-        let size: usize = size.unwrap_or(data.len());
+    pub fn new(data: Vec<K>) -> Self {
+        let size: usize = data.len();
         Vector { data, size }
     }
 
@@ -142,36 +204,33 @@ where
     pub fn norm(&self) -> f64 {
         self.data
             .iter()
-            .fold(f64::default(), |acc, &x| acc + (x.into() * x.into()))
+            .map(|&x| x.into() * x.into())
+            .sum::<f64>()
             .sqrt()
     }
 
-    #[allow(dead_code)]
     pub fn dot(&self, v: &Vector<K>) -> K {
         self.check_size(v);
 
         self.data
             .iter()
             .zip(&v.data)
-            .fold(K::default(), |acc, (&x, &y)| acc + x * y)
+            .fold(K::zero(), |acc, (&x, &y)| acc + x * y)
     }
 
     #[allow(dead_code)]
-    pub fn get_data(&self) -> &Vec<K> {
+    pub fn data(&self) -> &Vec<K> {
         &self.data
     }
 
     #[allow(dead_code)]
-    pub fn get_size(&self) -> usize {
+    pub fn size(&self) -> usize {
         self.size
     }
 }
 
-impl<K, const N: usize> From<[K; N]> for Vector<K>
-where
-    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Into<f64> + Copy + Default,
-{
+impl<K: Field, const N: usize> From<[K; N]> for Vector<K> {
     fn from(array: [K; N]) -> Self {
-        Vector::new(Vec::from(array), Some(N))
+        Vector::new(Vec::from(array))
     }
 }
