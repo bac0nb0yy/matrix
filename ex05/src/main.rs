@@ -10,9 +10,9 @@ fn angle_cos<K: Field>(u: &Vector<K>, v: &Vector<K>) -> f32 {
 
     if norm_u == K::zero().into() || norm_v == K::zero().into() {
         panic!("One or both vectors are zero");
-    } else {
-        (u.dot(v).into() / (u.norm() * v.norm())) as f32
     }
+
+    (u.dot(v).into() / (u.norm() * v.norm())) as f32
 }
 
 #[cfg(test)]
