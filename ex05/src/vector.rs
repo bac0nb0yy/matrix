@@ -202,11 +202,7 @@ impl<K: Field> Vector<K> {
 
     #[allow(dead_code)]
     pub fn norm(&self) -> f64 {
-        self.data
-            .iter()
-            .map(|&x| x.into() * x.into())
-            .sum::<f64>()
-            .sqrt()
+        self.dot(self).into().sqrt()
     }
 
     pub fn dot(&self, v: &Vector<K>) -> K {
