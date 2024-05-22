@@ -94,6 +94,15 @@ impl<K: Field, const M: usize, const N: usize> AddAssign<Vector<K, N>> for Matri
     }
 }
 
+impl<K: Field, const M: usize, const N: usize> AddAssign<K> for Matrix<K, M, N> {
+    fn add_assign(&mut self, rhs: K) {
+        self.data
+            .iter_mut()
+            .flat_map(|row| row.iter_mut())
+            .for_each(|element| *element += rhs);
+    }
+}
+
 impl<K: Field, const M: usize, const N: usize> Sub<Matrix<K, M, N>> for Matrix<K, M, N> {
     type Output = Self;
 
