@@ -1,5 +1,6 @@
 use crate::field::*;
 use crate::vector::Vector;
+
 use std::fmt::{Display, Formatter, Result};
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
