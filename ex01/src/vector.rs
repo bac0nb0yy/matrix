@@ -195,7 +195,7 @@ impl<K: Field, const N: usize> Vector<K, N> {
 
     pub fn linear_combination(u: &[Vector<K, N>], coefs: &[K]) -> Vector<K, N> {
         assert_eq!(
-            N,
+            u.len(),
             coefs.len(),
             "Number of vectors and coefficients must match"
         );
