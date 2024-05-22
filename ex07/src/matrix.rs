@@ -122,12 +122,57 @@ impl<K: Field, const M: usize, const N: usize> Sub<Matrix<K, M, N>> for Matrix<K
     }
 }
 
+impl<K: Field, const M: usize, const N: usize> Sub<Vector<K, N>> for Matrix<K, M, N> {
+    type Output = Self;
+
+    fn sub(self, rhs: Vector<K, N>) -> Self::Output {
+        let mut result = self;
+        for i in 0..M {
+            for j in 0..N {
+                result.data[i][j] -= rhs.data()[j];
+            }
+        }
+        result
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> Sub<K> for Matrix<K, M, N> {
+    type Output = Self;
+
+    fn sub(self, scalar: K) -> Self::Output {
+        Matrix {
+            data: self.data.map(|row| row.map(|val| val - scalar)),
+            rows: M,
+            cols: N,
+        }
+    }
+}
+
 impl<K: Field, const M: usize, const N: usize> SubAssign<Matrix<K, M, N>> for Matrix<K, M, N> {
     fn sub_assign(&mut self, rhs: Matrix<K, M, N>) {
         self.data
             .iter_mut()
             .zip(&rhs.data)
             .for_each(|(row1, row2)| row1.iter_mut().zip(row2).for_each(|(a, &b)| *a -= b));
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> SubAssign<Vector<K, N>> for Matrix<K, M, N> {
+    fn sub_assign(&mut self, rhs: Vector<K, N>) {
+        self.data.iter_mut().for_each(|row| {
+            for (a, &b) in row.iter_mut().zip(rhs.data().iter()) {
+                *a -= b;
+            }
+        });
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> SubAssign<K> for Matrix<K, M, N> {
+    fn sub_assign(&mut self, rhs: K) {
+        self.data
+            .iter_mut()
+            .flat_map(|row| row.iter_mut())
+            .for_each(|element| *element -= rhs);
     }
 }
 
