@@ -266,19 +266,6 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
         }
     }
 
-    pub fn determinant(&self) -> K {
-        let mut am = self.clone();
-        let mut det = K::one();
-
-        am.gaussian_elimination();
-
-        for i in 0..N {
-            det *= am.data[i][i];
-        }
-
-        det
-    }
-
     pub fn mul_mat<const P: usize>(&self, rhs: &Matrix<K, N, P>) -> Matrix<K, M, P> {
         let mut data = [[K::zero(); P]; M];
         for i in 0..M {
@@ -323,6 +310,21 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
     #[allow(dead_code)]
     pub fn cols(&self) -> usize {
         self.cols
+    }
+}
+
+impl<K: Field, const N: usize> Matrix<K, N, N> {
+    pub fn determinant(&self) -> K {
+        let mut am = self.clone();
+        let mut det = K::one();
+
+        am.gaussian_elimination();
+
+        for i in 0..N {
+            det *= am.data[i][i];
+        }
+
+        det
     }
 }
 
