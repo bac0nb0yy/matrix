@@ -221,10 +221,11 @@ impl<K: Field, const M: usize, const N: usize, const P: usize> MulAssign<Matrix<
 }
 
 impl<K: Field, const M: usize, const N: usize> MulAssign<K> for Matrix<K, M, N> {
-    fn mul_assign(&mut self, scl: K) {
+    fn mul_assign(&mut self, rhs: K) {
         self.data
             .iter_mut()
-            .for_each(|row| row.iter_mut().for_each(|v| *v *= scl));
+            .flat_map(|row| row.iter_mut())
+            .for_each(|element| *element *= rhs);
     }
 }
 
