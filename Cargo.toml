@@ -16,6 +16,7 @@ members = [
 	"ex08",
 	"ex09",
 	"ex10",
+	"ex11",
 ]
 
 [dependencies]
