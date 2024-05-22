@@ -262,7 +262,7 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
             for i in (fd + 1)..M {
                 let scale = am.data()[i][fd] / am.data()[fd][fd];
                 for j in fd..M {
-                    am.data()[i][j] == scale * am.data()[fd][j];
+                    am.data_mut()[i][j] = scale * am.data()[fd][j];
                 }
             }
         }
