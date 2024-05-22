@@ -1,0 +1,22 @@
+[package]
+name = "matrix"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [
+    "ex00",
+    "ex01",
+    "ex02",
+	"ex03",
+	"ex04",
+	"ex05",
+	"ex06",
+	"ex07",
+]
+
+[dependencies]
+nalgebra = "0.29.0"
+approx = "0.5.1"
+rand = "0.8.4"
+num-traits = "0.2.19"
