@@ -206,6 +206,20 @@ impl<K: Field, const M: usize, const N: usize> Mul<K> for Matrix<K, M, N> {
     }
 }
 
+impl<K: Field, const M: usize, const N: usize, const P: usize> MulAssign<Matrix<K, N, P>>
+    for Matrix<K, M, N>
+{
+    fn mul_assign(&mut self, rhs: Matrix<K, N, P>) {
+        for i in 0..M {
+            for j in 0..P {
+                for k in 0..N {
+                    self.data[i][j] += self.data[i][k] * rhs.data[k][j];
+                }
+            }
+        }
+    }
+}
+
 impl<K: Field, const M: usize, const N: usize> MulAssign<K> for Matrix<K, M, N> {
     fn mul_assign(&mut self, scl: K) {
         self.data
