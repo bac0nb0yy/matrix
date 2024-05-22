@@ -1,4 +1,5 @@
 use crate::field::*;
+use crate::vector::Vector;
 use std::fmt::{Display, Formatter, Result};
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
@@ -42,6 +43,32 @@ impl<K: Field, const M: usize, const N: usize> Add<Matrix<K, M, N>> for Matrix<K
 
         Matrix {
             data,
+            rows: M,
+            cols: N,
+        }
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> Add<Vector<K, N>> for Matrix<K, M, N> {
+    type Output = Self;
+
+    fn add(self, rhs: Vector<K, N>) -> Self::Output {
+        let mut result = self;
+        for i in 0..M {
+            for j in 0..N {
+                result.data[i][j] += rhs.data()[j];
+            }
+        }
+        result
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> Add<K> for Matrix<K, M, N> {
+    type Output = Self;
+
+    fn add(self, scalar: K) -> Self::Output {
+        Matrix {
+            data: self.data.map(|row| row.map(|val| val + scalar)),
             rows: M,
             cols: N,
         }
@@ -140,45 +167,47 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
         Matrix { data, rows, cols }
     }
 
-    fn operate<F: Fn(K, K) -> K>(&mut self, v: &Matrix<K, M, N>, op: F) {
-        self.data
-            .iter_mut()
-            .zip(&v.data)
-            .for_each(|(a_row, b_row)| {
-                a_row
-                    .iter_mut()
-                    .zip(b_row)
-                    .for_each(|(a, b)| *a = op(*a, *b));
-            });
-    }
-
-    pub fn add(&mut self, v: &Matrix<K, M, N>) {
-        self.operate(v, |a, b| a + b);
-    }
-
-    pub fn sub(&mut self, v: &Matrix<K, M, N>) {
-        self.operate(v, |a, b| a - b);
-    }
-
-    pub fn scl(&mut self, a: K) {
-        self.data
-            .iter_mut()
-            .for_each(|row| row.iter_mut().for_each(|v| *v = *v * a));
+    pub fn mul_vec(&self, vec: [K; N]) -> [K; M] {
+        let mut result = [K::zero(); M];
+        for i in 0..M {
+            for j in 0..N {
+                result[i] += self.data[i][j] * vec[j];
+            }
+        }
+        result
     }
 
     #[allow(dead_code)]
-    pub fn get_data(&self) -> &[[K; N]; M] {
+    pub fn data(&self) -> &[[K; N]; M] {
         &self.data
     }
 
     #[allow(dead_code)]
-    pub fn get_rows(&self) -> usize {
+    pub fn rows(&self) -> usize {
         self.rows
     }
 
     #[allow(dead_code)]
-    pub fn get_cols(&self) -> usize {
+    pub fn cols(&self) -> usize {
         self.cols
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
+    fn mul_mat<const P: usize>(&self, rhs: &Matrix<K, N, P>) -> Matrix<K, M, P> {
+        let mut data = [[K::zero(); P]; M];
+        for i in 0..M {
+            for j in 0..P {
+                for k in 0..N {
+                    data[i][j] += self.data[i][k] * rhs.data[k][j];
+                }
+            }
+        }
+        Matrix {
+            data,
+            rows: M,
+            cols: P,
+        }
     }
 }
 
