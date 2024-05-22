@@ -204,11 +204,17 @@ impl<K: Field, const M: usize, const N: usize, const P: usize> Mul<Matrix<K, N, 
     }
 }
 
-impl<K: Field, const M: usize, const N: usize> MulAssign<K> for Matrix<K, M, N> {
-    fn mul_assign(&mut self, scl: K) {
-        self.data
-            .iter_mut()
-            .for_each(|row| row.iter_mut().for_each(|v| *v *= scl));
+impl<K: Field, const M: usize, const N: usize> Mul<Vector<K, N>> for Matrix<K, M, N> {
+    type Output = Self;
+
+    fn mul(self, rhs: Vector<K, N>) -> Self::Output {
+        let mut result = self;
+        for i in 0..M {
+            for j in 0..N {
+                result.data[i][j] *= rhs.data()[j];
+            }
+        }
+        result
     }
 }
 
@@ -224,11 +230,35 @@ impl<K: Field, const M: usize, const N: usize> Mul<K> for Matrix<K, M, N> {
     }
 }
 
+impl<K: Field, const M: usize, const N: usize> MulAssign<K> for Matrix<K, M, N> {
+    fn mul_assign(&mut self, scl: K) {
+        self.data
+            .iter_mut()
+            .for_each(|row| row.iter_mut().for_each(|v| *v *= scl));
+    }
+}
+
 impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
     pub fn new(data: [[K; N]; M]) -> Self {
         let rows: usize = data.len();
         let cols: usize = data[0].len();
         Matrix { data, rows, cols }
+    }
+
+    pub fn mul_mat<const P: usize>(&self, rhs: &Matrix<K, N, P>) -> Matrix<K, M, P> {
+        let mut data = [[K::zero(); P]; M];
+        for i in 0..M {
+            for j in 0..P {
+                for k in 0..N {
+                    data[i][j] += self.data[i][k] * rhs.data[k][j];
+                }
+            }
+        }
+        Matrix {
+            data,
+            rows: M,
+            cols: P,
+        }
     }
 
     pub fn mul_vec(&self, vec: [K; N]) -> [K; M] {
@@ -254,24 +284,6 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
     #[allow(dead_code)]
     pub fn cols(&self) -> usize {
         self.cols
-    }
-}
-
-impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
-    fn mul_mat<const P: usize>(&self, rhs: &Matrix<K, N, P>) -> Matrix<K, M, P> {
-        let mut data = [[K::zero(); P]; M];
-        for i in 0..M {
-            for j in 0..P {
-                for k in 0..N {
-                    data[i][j] += self.data[i][k] * rhs.data[k][j];
-                }
-            }
-        }
-        Matrix {
-            data,
-            rows: M,
-            cols: P,
-        }
     }
 }
 
