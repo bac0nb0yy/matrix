@@ -187,7 +187,7 @@ impl<K: Field, const M: usize, const N: usize, const P: usize> Mul<Matrix<K, N, 
 }
 
 impl<K: Field, const M: usize, const N: usize> Mul<Vector<K, N>> for Matrix<K, M, N> {
-    type Output = [K; M];
+    type Output = Vector<K, M>;
 
     fn mul(self, rhs: Vector<K, N>) -> Self::Output {
         self.mul_vec(&rhs)
@@ -252,11 +252,11 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
         }
     }
 
-    pub fn mul_vec(&self, rhs: &Vector<K, N>) -> [K; M] {
-        let mut result = [K::zero(); M];
+    pub fn mul_vec(&self, rhs: &Vector<K, N>) -> Vector<K, M> {
+        let mut result = Vector::from([K::zero(); M]);
         for i in 0..M {
             for j in 0..N {
-                result[i] += self.data[i][j] * rhs.data()[j];
+                result.data_mut()[i] += self.data[i][j] * rhs.data()[j];
             }
         }
         result
@@ -265,6 +265,11 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
     #[allow(dead_code)]
     pub fn data(&self) -> &[[K; N]; M] {
         &self.data
+    }
+
+    #[allow(dead_code)]
+    pub fn data_mut(&mut self) -> &mut [[K; N]; M] {
+        &mut self.data
     }
 
     #[allow(dead_code)]

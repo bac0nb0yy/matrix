@@ -18,7 +18,7 @@ impl<K: Field + Display, const N: usize> Display for Vector<K, N> {
             }
             write!(f, "{:.3}", item)?;
         }
-        write!(f, "]")?;
+        writeln!(f, "]")?;
         Ok(())
     }
 }
@@ -200,6 +200,10 @@ impl<K: Field, const N: usize> Vector<K, N> {
 
     pub fn data(&self) -> &[K; N] {
         &self.data
+    }
+
+    pub fn data_mut(&mut self) -> &mut [K; N] {
+        &mut self.data
     }
 
     #[allow(dead_code)]
