@@ -236,38 +236,41 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
         Matrix { data, rows, cols }
     }
 
-    pub fn row_echelon(&self) -> Self {
-        let mut result = self.clone();
-        let mut pivot_row = 0;
-        for pivot_col in 0..N {
-            if pivot_row >= M {
-                break;
-            }
-            let mut max_row = pivot_row;
-            for row in (pivot_row + 1)..M {
-                if result.data[row][pivot_col].abs() > result.data[max_row][pivot_col].abs() {
-                    max_row = row;
+    pub fn determinant(&self) -> K {
+        let mut am = self.clone();
+        let mut det = K::one();
+        for fd in 0..N {
+            let mut mx_idx = fd;
+            let mut mx_val = am.data()[fd][fd].abs();
+
+            for row in (fd + 1)..M {
+                if am.data[row][fd].abs() > mx_val {
+                    mx_val = am.data[row][fd].abs();
+                    mx_idx = row;
                 }
             }
-            if result.data[max_row][pivot_col] == K::zero() {
+
+            if mx_val == K::zero() {
                 continue;
             }
-            result.data.swap(pivot_row, max_row);
-            let pivot = result.data[pivot_row][pivot_col];
-            let mut row = [K::zero(); N];
-            for col in 0..N {
-                row[col] = result.data[pivot_row][col] / pivot;
+
+            if mx_idx != fd {
+                am.data.swap(fd, mx_idx);
+                det *= -K::one();
             }
-            result.data[pivot_row] = row;
-            for row in (0..M).filter(|&r| r != pivot_row) {
-                let factor = result.data[row][pivot_col];
-                for col in pivot_col..N {
-                    result.data[row][col] -= factor * result.data[pivot_row][col];
+
+            for i in (fd + 1)..M {
+                let scale = am.data()[i][fd] / am.data()[fd][fd];
+                for j in fd..M {
+                    am.data()[i][j] == scale * am.data()[fd][j];
                 }
             }
-            pivot_row += 1;
         }
-        result
+
+        am.data
+            .iter()
+            .enumerate()
+            .fold(K::one(), |acc, (i, row)| acc * row[i])
     }
 
     pub fn mul_mat<const P: usize>(&self, rhs: &Matrix<K, N, P>) -> Matrix<K, M, P> {
