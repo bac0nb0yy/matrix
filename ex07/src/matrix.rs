@@ -84,6 +84,15 @@ impl<K: Field, const M: usize, const N: usize> AddAssign<Matrix<K, M, N>> for Ma
     }
 }
 
+impl<K: Field, const M: usize, const N: usize> AddAssign<Vector<K, N>> for Matrix<K, M, N> {
+    fn add_assign(&mut self, rhs: Vector<K, N>) {
+        self.data
+            .iter_mut()
+            .zip(&rhs.data())
+            .for_each(|(row1, row2)| row1.iter_mut().zip(row2).for_each(|(a, &b)| *a += b));
+    }
+}
+
 impl<K: Field, const M: usize, const N: usize> Sub<Matrix<K, M, N>> for Matrix<K, M, N> {
     type Output = Self;
 
