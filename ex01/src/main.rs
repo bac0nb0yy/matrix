@@ -1,3 +1,4 @@
+mod field;
 mod vector;
 
 use vector::Vector;
@@ -12,73 +13,146 @@ mod vectors {
     const NB_TESTCASE_VECTORS: usize = 100;
     const THRESHOLD: f64 = 1e-10;
 
-    fn random_testcases_linear_combination() {
+    fn random_testcases_linear_combination<const N: usize>() {
         for _ in 0..NB_TESTCASE_VECTORS {
             let mut rng = rand::thread_rng();
-            let num_vectors = rng.gen_range(1..=5);
-            let size = rng.gen_range(1..=10);
 
-            let mut my_vectors: Vec<Vector<f64>> = Vec::new();
-            let mut real_vectors: Vec<Vec<f64>> = Vec::new();
+            let mut my_vectors: Vec<Vector<f64, N>> = Vec::new();
+            let mut real_vectors: Vec<[f64; N]> = Vec::new();
             let mut coefs: Vec<f64> = Vec::new();
 
-            for _ in 0..num_vectors {
-                let vector = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
+            for _ in 0..N {
+                let vector: [f64; N] = (0..N)
+                    .map(|_| rng.gen())
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap();
                 let coef = rng.gen::<f64>();
-                my_vectors.push(Vector::new(vector.clone(), Some(size)));
+                my_vectors.push(Vector::new(vector));
                 real_vectors.push(vector);
                 coefs.push(coef);
             }
 
             let my_results = Vector::linear_combination(&my_vectors, &coefs);
-            let nalgebra_results: Vec<f64> = real_vectors.iter().zip(&coefs).fold(
-                vec![0.0; real_vectors[0].len()],
-                |mut acc, (vector, &coef)| {
-                    for (a, &b) in acc.iter_mut().zip(vector.iter()) {
-                        *a += coef * b;
-                    }
-                    acc
-                },
-            );
+            let nalgebra_results: [f64; N] =
+                real_vectors
+                    .iter()
+                    .zip(&coefs)
+                    .fold([0.0; N], |mut acc, (vector, &coef)| {
+                        for (a, &b) in acc.iter_mut().zip(vector.iter()) {
+                            *a += coef * b;
+                        }
+                        acc
+                    });
 
-            for (i, &value) in my_results.get_data().iter().enumerate() {
+            for (i, &value) in my_results.data().iter().enumerate() {
                 assert_abs_diff_eq!(value, nalgebra_results[i], epsilon = THRESHOLD);
             }
         }
     }
 
     #[test]
-    fn vectors_linear_combination() {
-        random_testcases_linear_combination();
+    fn vectors_linear_combination_3() {
+        random_testcases_linear_combination::<3>();
     }
 
-    fn generate_mismatched_coefs_vectors() -> (Vec<Vector<f64>>, Vec<f64>) {
-        let mut rng = rand::thread_rng();
-        let num_vectors = rng.gen_range(1..=5);
-        let size = rng.gen_range(1..=10);
+    #[test]
+    fn vectors_linear_combination_5() {
+        random_testcases_linear_combination::<5>();
+    }
 
-        let mut my_vectors: Vec<Vector<f64>> = Vec::new();
+    #[test]
+    fn vectors_linear_combination_42() {
+        random_testcases_linear_combination::<42>();
+    }
+
+    #[test]
+    fn vectors_linear_combination_69() {
+        random_testcases_linear_combination::<69>();
+    }
+
+    fn generate_mismatched_coefs_vectors<const N: usize>() -> (Vec<Vector<f64, N>>, Vec<f64>) {
+        let mut rng = rand::thread_rng();
+        let num_vectors = N + rng.gen_range(1..=5);
+
+        let mut my_vectors: Vec<Vector<f64, N>> = Vec::new();
         let mut coefs: Vec<f64> = Vec::new();
 
         for _ in 0..num_vectors {
-            let vector = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
+            let vector: [f64; N] = (0..N)
+                .map(|_| rng.gen())
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap();
             let coef = rng.gen::<f64>();
-            my_vectors.push(Vector::new(Vec::from(vector.clone()), Some(size)));
+            my_vectors.push(Vector::new(vector));
             coefs.push(coef);
         }
 
         for _ in 0..rng.gen_range(1..=5) {
-            let vector = Vec::<f64>::from_iter((0..size).map(|_| rng.gen::<f64>()));
-            my_vectors.push(Vector::new(Vec::from(vector.clone()), Some(size)));
+            let vector: [f64; N] = (0..N)
+                .map(|_| rng.gen())
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap();
+            my_vectors.push(Vector::new(vector));
         }
 
         (my_vectors, coefs)
     }
 
     #[test]
-    fn vector_bad_size() {
+    fn vector_bad_size_3() {
         for _ in 0..NB_TESTCASE_VECTORS {
-            let (my_vectors, coefs) = generate_mismatched_coefs_vectors();
+            let (my_vectors, coefs) = generate_mismatched_coefs_vectors::<3>();
+
+            let result = catch_unwind(|| {
+                Vector::linear_combination(&my_vectors, &coefs);
+            });
+
+            assert!(
+                result.is_err(),
+                "Adding mismatched number of vectors compared to number of coefs should panic"
+            );
+        }
+    }
+
+    #[test]
+    fn vector_bad_size_5() {
+        for _ in 0..NB_TESTCASE_VECTORS {
+            let (my_vectors, coefs) = generate_mismatched_coefs_vectors::<5>();
+
+            let result = catch_unwind(|| {
+                Vector::linear_combination(&my_vectors, &coefs);
+            });
+
+            assert!(
+                result.is_err(),
+                "Adding mismatched number of vectors compared to number of coefs should panic"
+            );
+        }
+    }
+
+    #[test]
+    fn vector_bad_size_42() {
+        for _ in 0..NB_TESTCASE_VECTORS {
+            let (my_vectors, coefs) = generate_mismatched_coefs_vectors::<42>();
+
+            let result = catch_unwind(|| {
+                Vector::linear_combination(&my_vectors, &coefs);
+            });
+
+            assert!(
+                result.is_err(),
+                "Adding mismatched number of vectors compared to number of coefs should panic"
+            );
+        }
+    }
+
+    #[test]
+    fn vector_bad_size_69() {
+        for _ in 0..NB_TESTCASE_VECTORS {
+            let (my_vectors, coefs) = generate_mismatched_coefs_vectors::<69>();
 
             let result = catch_unwind(|| {
                 Vector::linear_combination(&my_vectors, &coefs);
