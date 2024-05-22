@@ -1,57 +1,83 @@
-use std::default::Default;
+use crate::field::*;
+use crate::vector::Vector;
+
 use std::fmt::{Display, Formatter, Result};
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Debug, Clone)]
-pub struct Matrix<K> {
-    data: Vec<Vec<K>>,
+pub struct Matrix<K, const M: usize, const N: usize> {
+    data: [[K; N]; M],
     rows: usize,
     cols: usize,
 }
 
-impl<K: Display> Display for Matrix<K> {
+impl<K: Field + Display, const M: usize, const N: usize> Display for Matrix<K, M, N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        for row in &self.data[..self.rows] {
+        write!(f, "[")?;
+        for (i, row) in self.data[..self.rows].iter().enumerate() {
+            if i != 0 {
+                write!(f, "\n ")?;
+            }
             write!(f, "[")?;
-            for (i, item) in row.iter().enumerate() {
-                if i != 0 {
+            for (j, item) in row.iter().enumerate() {
+                if j != 0 {
                     write!(f, ", ")?;
                 }
                 write!(f, "{:.3}", item)?;
             }
-            writeln!(f, "]")?;
+            write!(f, "]")?;
         }
-        Ok(())
+        writeln!(f, "]")
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Add for Matrix<K> {
+impl<K: Field, const M: usize, const N: usize> Add<Matrix<K, M, N>> for Matrix<K, M, N> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        self.check_size(&rhs);
+        let mut data = [[K::zero(); N]; M];
+        for i in 0..M {
+            for j in 0..N {
+                data[i][j] = self.data[i][j] + rhs.data[i][j];
+            }
+        }
 
-        let new_matrix: Vec<Vec<K>> = self
-            .data
-            .iter()
-            .zip(&rhs.data)
-            .map(|(row1, row2)| row1.iter().zip(row2).map(|(&a, &b)| a + b).collect())
-            .collect();
-
-        Matrix::new(new_matrix, Some(self.rows), Some(self.cols))
+        Matrix {
+            data,
+            rows: M,
+            cols: N,
+        }
     }
 }
 
-impl<K> AddAssign<Matrix<K>> for Matrix<K>
-where
-    K: AddAssign + Copy,
-{
-    fn add_assign(&mut self, rhs: Matrix<K>) {
-        assert!(
-            self.rows == rhs.rows && self.cols == rhs.cols,
-            "Matrix size mismatch"
-        );
+impl<K: Field, const M: usize, const N: usize> Add<Vector<K, N>> for Matrix<K, M, N> {
+    type Output = Self;
 
+    fn add(self, rhs: Vector<K, N>) -> Self::Output {
+        let mut result = self;
+        for i in 0..M {
+            for j in 0..N {
+                result.data[i][j] += rhs.data()[j];
+            }
+        }
+        result
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> Add<K> for Matrix<K, M, N> {
+    type Output = Self;
+
+    fn add(self, scalar: K) -> Self::Output {
+        Matrix {
+            data: self.data.map(|row| row.map(|val| val + scalar)),
+            rows: M,
+            cols: N,
+        }
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> AddAssign<Matrix<K, M, N>> for Matrix<K, M, N> {
+    fn add_assign(&mut self, rhs: Matrix<K, M, N>) {
         self.data
             .iter_mut()
             .zip(&rhs.data)
@@ -59,33 +85,72 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Sub for Matrix<K> {
-    type Output = Self;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        self.check_size(&rhs);
-
-        let new_matrix: Vec<Vec<K>> = self
-            .data
-            .iter()
-            .zip(&rhs.data)
-            .map(|(row1, row2)| row1.iter().zip(row2).map(|(&a, &b)| a - b).collect())
-            .collect();
-
-        Matrix::new(new_matrix, Some(self.rows), Some(self.cols))
+impl<K: Field, const M: usize, const N: usize> AddAssign<Vector<K, N>> for Matrix<K, M, N> {
+    fn add_assign(&mut self, rhs: Vector<K, N>) {
+        self.data.iter_mut().for_each(|row| {
+            for (a, &b) in row.iter_mut().zip(rhs.data().iter()) {
+                *a += b;
+            }
+        });
     }
 }
 
-impl<K> SubAssign<Matrix<K>> for Matrix<K>
-where
-    K: SubAssign + Copy,
-{
-    fn sub_assign(&mut self, rhs: Matrix<K>) {
-        assert!(
-            self.rows == rhs.rows && self.cols == rhs.cols,
-            "Matrix size mismatch"
-        );
+impl<K: Field, const M: usize, const N: usize> AddAssign<K> for Matrix<K, M, N> {
+    fn add_assign(&mut self, rhs: K) {
+        self.data
+            .iter_mut()
+            .flat_map(|row| row.iter_mut())
+            .for_each(|element| *element += rhs);
+    }
+}
 
+impl<K: Field, const M: usize, const N: usize> Sub<Matrix<K, M, N>> for Matrix<K, M, N> {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        let mut data = [[K::zero(); N]; M];
+        for i in 0..M {
+            for j in 0..N {
+                data[i][j] = self.data[i][j] - rhs.data[i][j];
+            }
+        }
+
+        Matrix {
+            data,
+            rows: M,
+            cols: N,
+        }
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> Sub<Vector<K, N>> for Matrix<K, M, N> {
+    type Output = Self;
+
+    fn sub(self, rhs: Vector<K, N>) -> Self::Output {
+        let mut result = self;
+        for i in 0..M {
+            for j in 0..N {
+                result.data[i][j] -= rhs.data()[j];
+            }
+        }
+        result
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> Sub<K> for Matrix<K, M, N> {
+    type Output = Self;
+
+    fn sub(self, scalar: K) -> Self::Output {
+        Matrix {
+            data: self.data.map(|row| row.map(|val| val - scalar)),
+            rows: M,
+            cols: N,
+        }
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> SubAssign<Matrix<K, M, N>> for Matrix<K, M, N> {
+    fn sub_assign(&mut self, rhs: Matrix<K, M, N>) {
         self.data
             .iter_mut()
             .zip(&rhs.data)
@@ -93,89 +158,134 @@ where
     }
 }
 
-impl<K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default> Mul for Matrix<K> {
-    type Output = Self;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        self.check_size(&rhs);
-
-        let new_matrix: Vec<Vec<K>> = self
-            .data
-            .iter()
-            .zip(&rhs.data)
-            .map(|(row1, row2)| row1.iter().zip(row2).map(|(&a, &b)| a * b).collect())
-            .collect();
-
-        Matrix::new(new_matrix, Some(self.rows), Some(self.cols))
+impl<K: Field, const M: usize, const N: usize> SubAssign<Vector<K, N>> for Matrix<K, M, N> {
+    fn sub_assign(&mut self, rhs: Vector<K, N>) {
+        self.data.iter_mut().for_each(|row| {
+            for (a, &b) in row.iter_mut().zip(rhs.data().iter()) {
+                *a -= b;
+            }
+        });
     }
 }
 
-impl<K> MulAssign<K> for Matrix<K>
-where
-    K: MulAssign + Copy,
-{
-    fn mul_assign(&mut self, scl: K) {
+impl<K: Field, const M: usize, const N: usize> SubAssign<K> for Matrix<K, M, N> {
+    fn sub_assign(&mut self, rhs: K) {
         self.data
             .iter_mut()
-            .for_each(|row| row.iter_mut().for_each(|v| *v *= scl));
+            .flat_map(|row| row.iter_mut())
+            .for_each(|element| *element -= rhs);
     }
 }
 
-impl<K: Mul<Output = K> + Sub<Output = K> + Add<Output = K> + Copy + Default> Mul<K> for Matrix<K> {
+impl<K: Field, const M: usize, const N: usize, const P: usize> Mul<Matrix<K, N, P>>
+    for Matrix<K, M, N>
+{
+    type Output = Matrix<K, M, P>;
+
+    fn mul(self, rhs: Matrix<K, N, P>) -> Self::Output {
+        self.mul_mat(&rhs)
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> Mul<Vector<K, N>> for Matrix<K, M, N> {
+    type Output = Vector<K, M>;
+
+    fn mul(self, rhs: Vector<K, N>) -> Self::Output {
+        self.mul_vec(&rhs)
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> Mul<K> for Matrix<K, M, N> {
     type Output = Self;
 
     fn mul(self, scalar: K) -> Self::Output {
-        let new_matrix: Vec<Vec<K>> = self
-            .data
-            .iter()
-            .map(|row| row.iter().map(|&a| a * scalar).collect())
-            .collect();
-        Matrix::new(new_matrix, Some(self.rows), Some(self.cols))
+        Matrix {
+            data: self.data.map(|row| row.map(|val| val * scalar)),
+            rows: M,
+            cols: N,
+        }
     }
 }
 
-impl<K> Matrix<K>
-where
-    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default,
+impl<K: Field, const M: usize, const N: usize, const P: usize> MulAssign<Matrix<K, N, P>>
+    for Matrix<K, M, N>
 {
-    fn check_size(&self, v: &Matrix<K>) {
-        assert!(
-            self.rows == v.rows && self.cols == v.cols,
-            "Matrix size mismatch"
-        );
+    fn mul_assign(&mut self, rhs: Matrix<K, N, P>) {
+        for i in 0..M {
+            for j in 0..P {
+                for k in 0..N {
+                    self.data[i][j] += self.data[i][k] * rhs.data[k][j];
+                }
+            }
+        }
     }
+}
 
-    pub fn new(data: Vec<Vec<K>>, rows: Option<usize>, cols: Option<usize>) -> Self {
-        let rows: usize = rows.unwrap_or(data.len());
-        let cols: usize = cols.unwrap_or(if rows > 0 { data[0].len() } else { 0 });
+impl<K: Field, const M: usize, const N: usize> MulAssign<K> for Matrix<K, M, N> {
+    fn mul_assign(&mut self, rhs: K) {
+        self.data
+            .iter_mut()
+            .flat_map(|row| row.iter_mut())
+            .for_each(|element| *element *= rhs);
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
+    pub fn new(data: [[K; N]; M]) -> Self {
+        let rows: usize = data.len();
+        let cols: usize = data[0].len();
         Matrix { data, rows, cols }
     }
 
+    pub fn mul_mat<const P: usize>(&self, rhs: &Matrix<K, N, P>) -> Matrix<K, M, P> {
+        let mut data = [[K::zero(); P]; M];
+        for i in 0..M {
+            for j in 0..P {
+                for k in 0..N {
+                    data[i][j] += self.data[i][k] * rhs.data[k][j];
+                }
+            }
+        }
+        Matrix {
+            data,
+            rows: M,
+            cols: P,
+        }
+    }
+
+    pub fn mul_vec(&self, rhs: &Vector<K, N>) -> Vector<K, M> {
+        let mut result = Vector::from([K::zero(); M]);
+        for i in 0..M {
+            for j in 0..N {
+                result.data_mut()[i] += self.data[i][j] * rhs.data()[j];
+            }
+        }
+        result
+    }
+
     #[allow(dead_code)]
-    pub fn get_data(&self) -> &Vec<Vec<K>> {
+    pub fn data(&self) -> &[[K; N]; M] {
         &self.data
     }
 
     #[allow(dead_code)]
-    pub fn get_rows(&self) -> usize {
+    pub fn data_mut(&mut self) -> &mut [[K; N]; M] {
+        &mut self.data
+    }
+
+    #[allow(dead_code)]
+    pub fn rows(&self) -> usize {
         self.rows
     }
 
     #[allow(dead_code)]
-    pub fn get_cols(&self) -> usize {
+    pub fn cols(&self) -> usize {
         self.cols
     }
 }
 
-impl<K, const M: usize, const N: usize> From<[[K; N]; M]> for Matrix<K>
-where
-    K: Add<Output = K> + Sub<Output = K> + Mul<Output = K> + Copy + Default,
-{
+impl<K: Field, const M: usize, const N: usize> From<[[K; N]; M]> for Matrix<K, M, N> {
     fn from(array: [[K; N]; M]) -> Self {
-        Matrix::new(
-            array.iter().map(|row| Vec::from(*row)).collect(),
-            Some(M),
-            Some(N),
-        )
+        Matrix::new(array)
     }
 }

@@ -186,10 +186,7 @@ impl<K: Field, const N: usize> Neg for Vector<K, N> {
 }
 
 impl<K: Field, const N: usize> Vector<K, N> {
-    fn operate<F>(&mut self, v: &Vector<K, N>, op: F)
-    where
-        F: Fn(K, K) -> K,
-    {
+    fn operate<F: Fn(K, K) -> K>(&mut self, v: &Vector<K, N>, op: F) {
         self.data
             .iter_mut()
             .zip(&v.data)
