@@ -236,16 +236,14 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
         Matrix { data, rows, cols }
     }
 
-    pub fn determinant(&self) -> K {
-        let mut am = self.clone();
-        let mut det = K::one();
+    pub fn gaussian_elimination(&mut self) {
         for fd in 0..N {
             let mut mx_idx = fd;
-            let mut mx_val = am.data()[fd][fd].abs();
+            let mut mx_val = self.data[fd][fd].abs();
 
             for row in (fd + 1)..M {
-                if am.data[row][fd].abs() > mx_val {
-                    mx_val = am.data[row][fd].abs();
+                if self.data[row][fd].abs() > mx_val {
+                    mx_val = self.data[row][fd].abs();
                     mx_idx = row;
                 }
             }
@@ -255,22 +253,30 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
             }
 
             if mx_idx != fd {
-                am.data.swap(fd, mx_idx);
-                det *= -K::one();
+                self.data.swap(fd, mx_idx);
             }
 
             for i in (fd + 1)..M {
-                let scale = am.data()[i][fd] / am.data()[fd][fd];
-                for j in fd..M {
-                    am.data_mut()[i][j] = scale * am.data()[fd][j];
+                let scale = self.data[i][fd] / self.data[fd][fd];
+                for j in fd..N {
+                    let value = self.data[fd][j];
+                    self.data[i][j] -= scale * value;
                 }
             }
         }
+    }
 
-        am.data
-            .iter()
-            .enumerate()
-            .fold(K::one(), |acc, (i, row)| acc * row[i])
+    pub fn determinant(&self) -> K {
+        let mut am = self.clone();
+        let mut det = K::one();
+
+        am.gaussian_elimination();
+
+        for i in 0..N {
+            det *= am.data[i][i];
+        }
+
+        det
     }
 
     pub fn mul_mat<const P: usize>(&self, rhs: &Matrix<K, N, P>) -> Matrix<K, M, P> {
