@@ -78,9 +78,27 @@ mod vectors {
     }
 
     #[test]
-    fn vectors_ops() {
+    fn vectors_ops_3() {
         random_testcases_vectors::<3>(false);
+        random_testcases_vectors::<3>(true);
+    }
+
+    #[test]
+    fn vectors_ops_5() {
+        random_testcases_vectors::<5>(false);
         random_testcases_vectors::<5>(true);
+    }
+
+    #[test]
+    fn vectors_ops_42() {
+        random_testcases_vectors::<42>(false);
+        random_testcases_vectors::<42>(true);
+    }
+
+    #[test]
+    fn vectors_ops_69() {
+        random_testcases_vectors::<69>(false);
+        random_testcases_vectors::<69>(true);
     }
 }
 
@@ -165,9 +183,39 @@ mod matrices {
     }
 
     #[test]
-    fn matrices_ops() {
+    fn matrices_ops_3x2() {
         random_testcases_matrices::<3, 2>(false);
         random_testcases_matrices::<3, 2>(true);
+    }
+
+    #[test]
+    fn matrices_ops_5x4() {
+        random_testcases_matrices::<5, 4>(false);
+        random_testcases_matrices::<5, 4>(true);
+    }
+
+    #[test]
+    fn matrices_ops_6x9() {
+        random_testcases_matrices::<6, 9>(false);
+        random_testcases_matrices::<6, 9>(true);
+    }
+
+    #[test]
+    fn matrices_ops_2x3() {
+        random_testcases_matrices::<2, 3>(false);
+        random_testcases_matrices::<2, 3>(true);
+    }
+
+    #[test]
+    fn matrices_ops_4x5() {
+        random_testcases_matrices::<4, 5>(false);
+        random_testcases_matrices::<4, 5>(true);
+    }
+
+    #[test]
+    fn matrices_ops_9x6() {
+        random_testcases_matrices::<9, 6>(false);
+        random_testcases_matrices::<9, 6>(true);
     }
 }
 

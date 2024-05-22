@@ -226,11 +226,6 @@ impl<K: Field, const N: usize> Vector<K, N> {
     pub fn data_mut(&mut self) -> &mut [K; N] {
         &mut self.data
     }
-
-    #[allow(dead_code)]
-    pub fn dim(&self) -> usize {
-        self.dim
-    }
 }
 
 impl<K: Field, const N: usize> From<[K; N]> for Vector<K, N> {
