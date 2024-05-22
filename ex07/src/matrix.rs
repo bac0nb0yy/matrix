@@ -182,39 +182,15 @@ impl<K: Field, const M: usize, const N: usize, const P: usize> Mul<Matrix<K, N, 
     type Output = Matrix<K, M, P>;
 
     fn mul(self, rhs: Matrix<K, N, P>) -> Self::Output {
-        assert_eq!(
-            self.cols, rhs.rows,
-            "Matrix dimensions do not match for multiplication"
-        );
-
-        let mut data = [[K::zero(); P]; M];
-        for i in 0..M {
-            for j in 0..P {
-                for k in 0..N {
-                    data[i][j] += self.data[i][k] * rhs.data[k][j];
-                }
-            }
-        }
-
-        Matrix {
-            data,
-            rows: M,
-            cols: P,
-        }
+        self.mul_mat(&rhs)
     }
 }
 
 impl<K: Field, const M: usize, const N: usize> Mul<Vector<K, N>> for Matrix<K, M, N> {
-    type Output = Self;
+    type Output = [K; M];
 
     fn mul(self, rhs: Vector<K, N>) -> Self::Output {
-        let mut result = self;
-        for i in 0..M {
-            for j in 0..N {
-                result.data[i][j] *= rhs.data()[j];
-            }
-        }
-        result
+        self.mul_vec(&rhs)
     }
 }
 
@@ -261,11 +237,11 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
         }
     }
 
-    pub fn mul_vec(&self, vec: [K; N]) -> [K; M] {
+    pub fn mul_vec(&self, rhs: &Vector<K, N>) -> [K; M] {
         let mut result = [K::zero(); M];
         for i in 0..M {
             for j in 0..N {
-                result[i] += self.data[i][j] * vec[j];
+                result[i] += self.data[i][j] * rhs.data()[j];
             }
         }
         result
