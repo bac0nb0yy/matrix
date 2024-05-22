@@ -200,7 +200,6 @@ impl<K: Field> Vector<K> {
         Vector { data, size }
     }
 
-    #[allow(dead_code)]
     pub fn norm(&self) -> f64 {
         self.dot(self).into().sqrt()
     }

@@ -197,10 +197,7 @@ impl<K: Field, const N: usize> Vector<K, N> {
     }
 
     pub fn norm(&self) -> f64 {
-        self.data
-            .iter()
-            .fold(f64::default(), |acc, &x| acc + (x.into() * x.into()))
-            .sqrt()
+        self.dot(self).into().sqrt()
     }
 
     pub fn norm_inf(&self) -> f64 {
