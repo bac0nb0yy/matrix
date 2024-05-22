@@ -1,4 +1,4 @@
-use num_traits::{One, Zero};
+use num_traits::{float::Float, One, Zero};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 pub trait Field:
@@ -16,6 +16,8 @@ pub trait Field:
     + Div
     + Neg<Output = Self>
     + Into<f64>
+    + PartialEq
+    + Float
     + Copy
     + Zero
     + One
@@ -37,6 +39,8 @@ impl<
             + Div
             + Neg<Output = Self>
             + Into<f64>
+            + PartialEq
+            + Float
             + Copy
             + Zero
             + One,

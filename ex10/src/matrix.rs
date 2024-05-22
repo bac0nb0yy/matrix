@@ -236,6 +236,40 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
         Matrix { data, rows, cols }
     }
 
+    pub fn row_echelon(&self) -> Self {
+        let mut result = self.clone();
+        let mut pivot_row = 0;
+        for pivot_col in 0..N {
+            if pivot_row >= M {
+                break;
+            }
+            let mut max_row = pivot_row;
+            for row in (pivot_row + 1)..M {
+                if result.data[row][pivot_col].abs() > result.data[max_row][pivot_col].abs() {
+                    max_row = row;
+                }
+            }
+            if result.data[max_row][pivot_col] == K::zero() {
+                continue;
+            }
+            result.data.swap(pivot_row, max_row);
+            let pivot = result.data[pivot_row][pivot_col];
+            let mut row = [K::zero(); N];
+            for col in 0..N {
+                row[col] = result.data[pivot_row][col] / pivot;
+            }
+            result.data[pivot_row] = row;
+            for row in (0..M).filter(|&r| r != pivot_row) {
+                let factor = result.data[row][pivot_col];
+                for col in pivot_col..N {
+                    result.data[row][col] -= factor * result.data[pivot_row][col];
+                }
+            }
+            pivot_row += 1;
+        }
+        result
+    }
+
     pub fn mul_mat<const P: usize>(&self, rhs: &Matrix<K, N, P>) -> Matrix<K, M, P> {
         let mut data = [[K::zero(); P]; M];
         for i in 0..M {
@@ -260,14 +294,6 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
             }
         }
         result
-    }
-
-    fn clone(&self) -> Self {
-        Self {
-            data: self.data,
-            cols: self.cols,
-            rows: self.rows,
-        }
     }
 
     #[allow(dead_code)]
