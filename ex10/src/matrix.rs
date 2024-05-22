@@ -249,9 +249,11 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
                     max_row = row;
                 }
             }
+
             if result.data[max_row][pivot_col] == K::zero() {
                 continue;
             }
+
             result.data.swap(pivot_row, max_row);
             let pivot = result.data[pivot_row][pivot_col];
             let mut row = [K::zero(); N];
