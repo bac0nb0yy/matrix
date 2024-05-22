@@ -243,6 +243,7 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
             if pivot_row >= M {
                 break;
             }
+
             let mut max_row = pivot_row;
             for row in (pivot_row + 1)..M {
                 if result.data[row][pivot_col].abs() > result.data[max_row][pivot_col].abs() {
@@ -260,6 +261,7 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
             for col in 0..N {
                 row[col] = result.data[pivot_row][col] / pivot;
             }
+
             result.data[pivot_row] = row;
             for row in (0..M).filter(|&r| r != pivot_row) {
                 let factor = result.data[row][pivot_col];
@@ -267,6 +269,7 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
                     result.data[row][col] -= factor * result.data[pivot_row][col];
                 }
             }
+
             pivot_row += 1;
         }
         result
