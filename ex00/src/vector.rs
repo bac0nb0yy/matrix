@@ -6,7 +6,6 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 #[derive(Debug, Clone)]
 pub struct Vector<K, const N: usize> {
     data: [K; N],
-    dim: usize,
 }
 
 impl<K: Field + Display, const N: usize> Display for Vector<K, N> {
@@ -32,7 +31,7 @@ impl<K: Field, const N: usize> Add<Vector<K, N>> for Vector<K, N> {
             data[i] = self.data[i] + rhs.data[i];
         }
 
-        Vector { data, dim: N }
+        Vector { data: data }
     }
 }
 
@@ -42,7 +41,6 @@ impl<K: Field, const N: usize> Add<K> for Vector<K, N> {
     fn add(self, scalar: K) -> Self::Output {
         Vector {
             data: self.data.map(|a| a + scalar),
-            dim: N,
         }
     }
 }
@@ -71,7 +69,7 @@ impl<K: Field, const N: usize> Sub<Vector<K, N>> for Vector<K, N> {
             data[i] = self.data[i] - rhs.data[i];
         }
 
-        Vector { data, dim: N }
+        Vector { data }
     }
 }
 
@@ -81,7 +79,6 @@ impl<K: Field, const N: usize> Sub<K> for Vector<K, N> {
     fn sub(self, scalar: K) -> Self::Output {
         Vector {
             data: self.data.map(|a| a - scalar),
-            dim: N,
         }
     }
 }
@@ -115,7 +112,6 @@ impl<K: Field, const N: usize> Mul<K> for Vector<K, N> {
     fn mul(self, scalar: K) -> Self::Output {
         Vector {
             data: self.data.map(|a| a * scalar),
-            dim: N,
         }
     }
 }
@@ -144,7 +140,7 @@ impl<K: Field, const N: usize> Div<Vector<K, N>> for Vector<K, N> {
             data[i] = self.data[i] / rhs.data[i];
         }
 
-        Vector { data, dim: N }
+        Vector { data }
     }
 }
 
@@ -154,7 +150,6 @@ impl<K: Field, const N: usize> Div<K> for Vector<K, N> {
     fn div(self, scalar: K) -> Self::Output {
         Vector {
             data: self.data.map(|a| a / scalar),
-            dim: N,
         }
     }
 }
@@ -180,7 +175,6 @@ impl<K: Field, const N: usize> Neg for Vector<K, N> {
     fn neg(self) -> Self::Output {
         Vector {
             data: self.data.map(|x| -x),
-            dim: self.dim,
         }
     }
 }
@@ -194,7 +188,7 @@ impl<K: Field, const N: usize> Vector<K, N> {
     }
 
     pub fn new(data: [K; N]) -> Self {
-        Vector { data, dim: N }
+        Vector { data }
     }
 
     pub fn add(&mut self, v: &Vector<K, N>) {
