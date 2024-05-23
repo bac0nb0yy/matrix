@@ -7,14 +7,12 @@ use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 #[derive(Debug, Clone)]
 pub struct Matrix<K, const M: usize, const N: usize> {
     data: [[K; N]; M],
-    rows: usize,
-    cols: usize,
 }
 
 impl<K: Field + Display, const M: usize, const N: usize> Display for Matrix<K, M, N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "[")?;
-        for (i, row) in self.data[..self.rows].iter().enumerate() {
+        for (i, row) in self.data.iter().enumerate() {
             if i != 0 {
                 write!(f, "\n ")?;
             }
@@ -42,11 +40,7 @@ impl<K: Field, const M: usize, const N: usize> Add<Matrix<K, M, N>> for Matrix<K
             }
         }
 
-        Matrix {
-            data,
-            rows: M,
-            cols: N,
-        }
+        Matrix { data }
     }
 }
 
@@ -70,8 +64,6 @@ impl<K: Field, const M: usize, const N: usize> Add<K> for Matrix<K, M, N> {
     fn add(self, scalar: K) -> Self::Output {
         Matrix {
             data: self.data.map(|row| row.map(|val| val + scalar)),
-            rows: M,
-            cols: N,
         }
     }
 }
@@ -115,11 +107,7 @@ impl<K: Field, const M: usize, const N: usize> Sub<Matrix<K, M, N>> for Matrix<K
             }
         }
 
-        Matrix {
-            data,
-            rows: M,
-            cols: N,
-        }
+        Matrix { data }
     }
 }
 
@@ -143,8 +131,6 @@ impl<K: Field, const M: usize, const N: usize> Sub<K> for Matrix<K, M, N> {
     fn sub(self, scalar: K) -> Self::Output {
         Matrix {
             data: self.data.map(|row| row.map(|val| val - scalar)),
-            rows: M,
-            cols: N,
         }
     }
 }
@@ -201,8 +187,6 @@ impl<K: Field, const M: usize, const N: usize> Mul<K> for Matrix<K, M, N> {
     fn mul(self, scalar: K) -> Self::Output {
         Matrix {
             data: self.data.map(|row| row.map(|val| val * scalar)),
-            rows: M,
-            cols: N,
         }
     }
 }
@@ -232,9 +216,7 @@ impl<K: Field, const M: usize, const N: usize> MulAssign<K> for Matrix<K, M, N> 
 
 impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
     pub fn new(data: [[K; N]; M]) -> Self {
-        let rows: usize = data.len();
-        let cols: usize = data[0].len();
-        Matrix { data, rows, cols }
+        Matrix { data }
     }
 
     fn operate<F: Fn(K, K) -> K>(&mut self, v: &Matrix<K, M, N>, op: F) {
@@ -272,11 +254,7 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
                 }
             }
         }
-        Matrix {
-            data,
-            rows: M,
-            cols: P,
-        }
+        Matrix { data }
     }
 
     pub fn mul_vec(&self, rhs: &Vector<K, N>) -> Vector<K, M> {
@@ -297,16 +275,6 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
     #[allow(dead_code)]
     pub fn data_mut(&mut self) -> &mut [[K; N]; M] {
         &mut self.data
-    }
-
-    #[allow(dead_code)]
-    pub fn rows(&self) -> usize {
-        self.rows
-    }
-
-    #[allow(dead_code)]
-    pub fn cols(&self) -> usize {
-        self.cols
     }
 }
 
