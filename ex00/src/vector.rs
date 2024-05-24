@@ -38,6 +38,15 @@ impl<K: Field, const N: usize> DerefMut for Vector<K, N> {
     }
 }
 
+impl<K, const N: usize> IntoIterator for Vector<K, N> {
+    type Item = K;
+    type IntoIter = std::array::IntoIter<K, N>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.into_iter()
+    }
+}
+
 impl<K: Field, const N: usize> Add<Vector<K, N>> for Vector<K, N> {
     type Output = Self;
 

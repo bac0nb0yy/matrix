@@ -256,4 +256,7 @@ fn main() {
     let u = Vector::from([2., 3.]);
     let v = Vector::from([2., 3.]);
     println!("{}", u + v);
+    for x in v {
+        println!("{}", x);
+    }
 }
