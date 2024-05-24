@@ -182,22 +182,6 @@ impl<K: Field, const N: usize> Vector<K, N> {
         Vector { data }
     }
 
-    pub fn add(&mut self, v: &Vector<K, N>) {
-        self.operate(v, |a, b| a + b);
-    }
-
-    pub fn sub(&mut self, v: &Vector<K, N>) {
-        self.operate(v, |a, b| a - b);
-    }
-
-    pub fn scl(&mut self, scalar: K) {
-        self.operate_scalar(scalar, |a, b| a * b);
-    }
-
-    pub fn inv_scl(&mut self, scalar: K) {
-        self.operate_scalar(scalar, |a, b| a / b);
-    }
-
     pub fn dot(&self, v: &Vector<K, N>) -> K {
         self.iter()
             .zip(&v.data)
