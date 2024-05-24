@@ -2,9 +2,9 @@ use crate::field::*;
 use crate::vector::Vector;
 
 use std::fmt::{Display, Formatter, Result};
-use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Deref, DerefMut, Mul, MulAssign, Sub, SubAssign};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Matrix<K, const M: usize, const N: usize> {
     data: [[K; N]; M],
 }
@@ -12,7 +12,7 @@ pub struct Matrix<K, const M: usize, const N: usize> {
 impl<K: Field + Display, const M: usize, const N: usize> Display for Matrix<K, M, N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "[")?;
-        for (i, row) in self.data.iter().enumerate() {
+        for (i, row) in self.iter().enumerate() {
             if i != 0 {
                 write!(f, "\n ")?;
             }
@@ -29,6 +29,20 @@ impl<K: Field + Display, const M: usize, const N: usize> Display for Matrix<K, M
     }
 }
 
+impl<K: Field, const M: usize, const N: usize> Deref for Matrix<K, M, N> {
+    type Target = [[K; N]; M];
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> DerefMut for Matrix<K, M, N> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.data
+    }
+}
+
 impl<K: Field, const M: usize, const N: usize> Add<Matrix<K, M, N>> for Matrix<K, M, N> {
     type Output = Self;
 
@@ -36,7 +50,7 @@ impl<K: Field, const M: usize, const N: usize> Add<Matrix<K, M, N>> for Matrix<K
         let mut data = [[K::zero(); N]; M];
         for i in 0..M {
             for j in 0..N {
-                data[i][j] = self.data[i][j] + rhs.data[i][j];
+                data[i][j] = self[i][j] + rhs[i][j];
             }
         }
 
@@ -51,7 +65,7 @@ impl<K: Field, const M: usize, const N: usize> Add<Vector<K, N>> for Matrix<K, M
         let mut result = self;
         for i in 0..M {
             for j in 0..N {
-                result.data[i][j] += rhs.data()[j];
+                result[i][j] += rhs[j];
             }
         }
         result
@@ -70,8 +84,7 @@ impl<K: Field, const M: usize, const N: usize> Add<K> for Matrix<K, M, N> {
 
 impl<K: Field, const M: usize, const N: usize> AddAssign<Matrix<K, M, N>> for Matrix<K, M, N> {
     fn add_assign(&mut self, rhs: Matrix<K, M, N>) {
-        self.data
-            .iter_mut()
+        self.iter_mut()
             .zip(&rhs.data)
             .for_each(|(row1, row2)| row1.iter_mut().zip(row2).for_each(|(a, &b)| *a += b));
     }
@@ -79,8 +92,8 @@ impl<K: Field, const M: usize, const N: usize> AddAssign<Matrix<K, M, N>> for Ma
 
 impl<K: Field, const M: usize, const N: usize> AddAssign<Vector<K, N>> for Matrix<K, M, N> {
     fn add_assign(&mut self, rhs: Vector<K, N>) {
-        self.data.iter_mut().for_each(|row| {
-            for (a, &b) in row.iter_mut().zip(rhs.data().iter()) {
+        self.iter_mut().for_each(|row| {
+            for (a, &b) in row.iter_mut().zip(rhs.iter()) {
                 *a += b;
             }
         });
@@ -89,8 +102,7 @@ impl<K: Field, const M: usize, const N: usize> AddAssign<Vector<K, N>> for Matri
 
 impl<K: Field, const M: usize, const N: usize> AddAssign<K> for Matrix<K, M, N> {
     fn add_assign(&mut self, rhs: K) {
-        self.data
-            .iter_mut()
+        self.iter_mut()
             .flat_map(|row| row.iter_mut())
             .for_each(|element| *element += rhs);
     }
@@ -103,7 +115,7 @@ impl<K: Field, const M: usize, const N: usize> Sub<Matrix<K, M, N>> for Matrix<K
         let mut data = [[K::zero(); N]; M];
         for i in 0..M {
             for j in 0..N {
-                data[i][j] = self.data[i][j] - rhs.data[i][j];
+                data[i][j] = self[i][j] - rhs[i][j];
             }
         }
 
@@ -118,7 +130,7 @@ impl<K: Field, const M: usize, const N: usize> Sub<Vector<K, N>> for Matrix<K, M
         let mut result = self;
         for i in 0..M {
             for j in 0..N {
-                result.data[i][j] -= rhs.data()[j];
+                result[i][j] -= rhs[j];
             }
         }
         result
@@ -137,8 +149,7 @@ impl<K: Field, const M: usize, const N: usize> Sub<K> for Matrix<K, M, N> {
 
 impl<K: Field, const M: usize, const N: usize> SubAssign<Matrix<K, M, N>> for Matrix<K, M, N> {
     fn sub_assign(&mut self, rhs: Matrix<K, M, N>) {
-        self.data
-            .iter_mut()
+        self.iter_mut()
             .zip(&rhs.data)
             .for_each(|(row1, row2)| row1.iter_mut().zip(row2).for_each(|(a, &b)| *a -= b));
     }
@@ -146,8 +157,8 @@ impl<K: Field, const M: usize, const N: usize> SubAssign<Matrix<K, M, N>> for Ma
 
 impl<K: Field, const M: usize, const N: usize> SubAssign<Vector<K, N>> for Matrix<K, M, N> {
     fn sub_assign(&mut self, rhs: Vector<K, N>) {
-        self.data.iter_mut().for_each(|row| {
-            for (a, &b) in row.iter_mut().zip(rhs.data().iter()) {
+        self.iter_mut().for_each(|row| {
+            for (a, &b) in row.iter_mut().zip(rhs.iter()) {
                 *a -= b;
             }
         });
@@ -156,8 +167,7 @@ impl<K: Field, const M: usize, const N: usize> SubAssign<Vector<K, N>> for Matri
 
 impl<K: Field, const M: usize, const N: usize> SubAssign<K> for Matrix<K, M, N> {
     fn sub_assign(&mut self, rhs: K) {
-        self.data
-            .iter_mut()
+        self.iter_mut()
             .flat_map(|row| row.iter_mut())
             .for_each(|element| *element -= rhs);
     }
@@ -198,7 +208,7 @@ impl<K: Field, const M: usize, const N: usize, const P: usize> MulAssign<Matrix<
         for i in 0..M {
             for j in 0..P {
                 for k in 0..N {
-                    self.data[i][j] += self.data[i][k] * rhs.data[k][j];
+                    self[i][j] = self[i][j] + self[i][k] * rhs[k][j];
                 }
             }
         }
@@ -207,8 +217,7 @@ impl<K: Field, const M: usize, const N: usize, const P: usize> MulAssign<Matrix<
 
 impl<K: Field, const M: usize, const N: usize> MulAssign<K> for Matrix<K, M, N> {
     fn mul_assign(&mut self, rhs: K) {
-        self.data
-            .iter_mut()
+        self.iter_mut()
             .flat_map(|row| row.iter_mut())
             .for_each(|element| *element *= rhs);
     }
@@ -220,15 +229,12 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
     }
 
     fn operate<F: Fn(K, K) -> K>(&mut self, v: &Matrix<K, M, N>, op: F) {
-        self.data
-            .iter_mut()
-            .zip(&v.data)
-            .for_each(|(a_row, b_row)| {
-                a_row
-                    .iter_mut()
-                    .zip(b_row)
-                    .for_each(|(a, b)| *a = op(*a, *b));
-            });
+        self.iter_mut().zip(&v.data).for_each(|(a_row, b_row)| {
+            a_row
+                .iter_mut()
+                .zip(b_row)
+                .for_each(|(a, b)| *a = op(*a, *b));
+        });
     }
 
     pub fn add(&mut self, v: &Matrix<K, M, N>) {
@@ -240,8 +246,7 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
     }
 
     pub fn scl(&mut self, a: K) {
-        self.data
-            .iter_mut()
+        self.iter_mut()
             .for_each(|row| row.iter_mut().for_each(|v| *v = *v * a));
     }
 
@@ -250,7 +255,7 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
         for i in 0..M {
             for j in 0..P {
                 for k in 0..N {
-                    data[i][j] += self.data[i][k] * rhs.data[k][j];
+                    data[i][j] += self[i][k] * rhs[k][j];
                 }
             }
         }
@@ -261,20 +266,10 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
         let mut result = Vector::from([K::zero(); M]);
         for i in 0..M {
             for j in 0..N {
-                result.data_mut()[i] += self.data[i][j] * rhs.data()[j];
+                result[i] += self[i][j] * rhs[j];
             }
         }
         result
-    }
-
-    #[allow(dead_code)]
-    pub fn data(&self) -> &[[K; N]; M] {
-        &self.data
-    }
-
-    #[allow(dead_code)]
-    pub fn data_mut(&mut self) -> &mut [[K; N]; M] {
-        &mut self.data
     }
 }
 

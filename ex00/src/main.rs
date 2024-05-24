@@ -28,8 +28,7 @@ mod vectors {
     fn random_testcases_vectors<const N: usize>(operators: bool) {
         for _ in 0..NB_TESTCASE_VECTORS {
             let mut my_vector: Vector<f64, N> = generate_random_vector::<N>();
-            let mut nalgebra_vector: SVector<f64, N> =
-                SVector::from_vec(Vec::from(my_vector.data()));
+            let mut nalgebra_vector: SVector<f64, N> = SVector::from_vec(Vec::from(&*my_vector));
             let mut rng = rand::thread_rng();
             let operation = rng.gen_range(0..3);
 
@@ -37,7 +36,7 @@ mod vectors {
                 0 => {
                     let random_vector: Vector<f64, N> = generate_random_vector::<N>();
                     let na_random_vector: SVector<f64, N> =
-                        SVector::from_vec(random_vector.data().to_vec());
+                        SVector::from_vec(random_vector.to_vec());
 
                     if operators {
                         my_vector += random_vector
@@ -49,7 +48,7 @@ mod vectors {
                 1 => {
                     let random_vector: Vector<f64, N> = generate_random_vector::<N>();
                     let na_random_vector: SVector<f64, N> =
-                        SVector::from_vec(random_vector.data().to_vec());
+                        SVector::from_vec(random_vector.to_vec());
 
                     if operators {
                         my_vector -= random_vector
@@ -71,7 +70,7 @@ mod vectors {
                 _ => unreachable!(),
             }
 
-            for (i, &value) in my_vector.data().iter().enumerate() {
+            for (i, &value) in my_vector.iter().enumerate() {
                 assert_abs_diff_eq!(value, nalgebra_vector[i], epsilon = THRESHOLD);
             }
         }
@@ -133,7 +132,7 @@ mod matrices {
     fn random_testcases_matrices<const M: usize, const N: usize>(operators: bool) {
         for _ in 0..NB_TESTCASE_MATRICES {
             let mut my_matrix: Matrix<f64, M, N> = generate_random_matrix();
-            let data_flat = flatten(my_matrix.data());
+            let data_flat = flatten(&my_matrix);
             let mut nalgebra_matrix: SMatrix<f64, M, N> = SMatrix::from_vec(data_flat.clone());
             let mut rng = rand::thread_rng();
             let operation = rng.gen_range(0..3);
@@ -142,7 +141,7 @@ mod matrices {
                 0 => {
                     let random_matrix: Matrix<f64, M, N> = generate_random_matrix();
                     let na_random_matrix: SMatrix<f64, M, N> =
-                        SMatrix::from_vec(flatten(random_matrix.data()));
+                        SMatrix::from_vec(flatten(&random_matrix));
 
                     if operators {
                         my_matrix += random_matrix
@@ -154,7 +153,7 @@ mod matrices {
                 1 => {
                     let random_matrix: Matrix<f64, M, N> = generate_random_matrix();
                     let na_random_matrix: SMatrix<f64, M, N> =
-                        SMatrix::from_vec(flatten(random_matrix.data()));
+                        SMatrix::from_vec(flatten(&random_matrix));
 
                     if operators {
                         my_matrix -= random_matrix
@@ -176,7 +175,7 @@ mod matrices {
                 _ => unreachable!(),
             }
 
-            for (i, &value) in flatten(my_matrix.data()).iter().enumerate() {
+            for (i, &value) in flatten(&my_matrix).iter().enumerate() {
                 assert_abs_diff_eq!(value, nalgebra_matrix[i], epsilon = THRESHOLD);
             }
         }

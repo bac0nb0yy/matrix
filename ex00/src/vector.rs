@@ -1,9 +1,11 @@
 use crate::field::*;
 
 use std::fmt::{Display, Formatter, Result};
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::ops::{
+    Add, AddAssign, Deref, DerefMut, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign,
+};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vector<K, const N: usize> {
     data: [K; N],
 }
@@ -11,7 +13,7 @@ pub struct Vector<K, const N: usize> {
 impl<K: Field + Display, const N: usize> Display for Vector<K, N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "[")?;
-        for (index, item) in self.data.iter().enumerate() {
+        for (index, item) in self.iter().enumerate() {
             if index != 0 {
                 write!(f, ", ")?;
             }
@@ -22,13 +24,27 @@ impl<K: Field + Display, const N: usize> Display for Vector<K, N> {
     }
 }
 
+impl<K: Field, const N: usize> Deref for Vector<K, N> {
+    type Target = [K];
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
+
+impl<K: Field, const N: usize> DerefMut for Vector<K, N> {
+    fn deref_mut(&mut self) -> &mut [K] {
+        &mut self.data
+    }
+}
+
 impl<K: Field, const N: usize> Add<Vector<K, N>> for Vector<K, N> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
         let mut data = [K::zero(); N];
         for i in 0..N {
-            data[i] = self.data[i] + rhs.data[i];
+            data[i] = self[i] + rhs[i];
         }
 
         Vector { data: data }
@@ -47,16 +63,13 @@ impl<K: Field, const N: usize> Add<K> for Vector<K, N> {
 
 impl<K: Field, const N: usize> AddAssign<Vector<K, N>> for Vector<K, N> {
     fn add_assign(&mut self, rhs: Vector<K, N>) {
-        self.data
-            .iter_mut()
-            .zip(&rhs.data)
-            .for_each(|(a, &b)| *a += b);
+        self.iter_mut().zip(&rhs.data).for_each(|(a, &b)| *a += b);
     }
 }
 
 impl<K: Field, const N: usize> AddAssign<K> for Vector<K, N> {
     fn add_assign(&mut self, rhs: K) {
-        self.data.iter_mut().for_each(|a| *a += rhs);
+        self.iter_mut().for_each(|a| *a += rhs);
     }
 }
 
@@ -66,7 +79,7 @@ impl<K: Field, const N: usize> Sub<Vector<K, N>> for Vector<K, N> {
     fn sub(self, rhs: Self) -> Self::Output {
         let mut data = [K::zero(); N];
         for i in 0..N {
-            data[i] = self.data[i] - rhs.data[i];
+            data[i] = self[i] - rhs[i];
         }
 
         Vector { data }
@@ -85,16 +98,13 @@ impl<K: Field, const N: usize> Sub<K> for Vector<K, N> {
 
 impl<K: Field, const N: usize> SubAssign<Vector<K, N>> for Vector<K, N> {
     fn sub_assign(&mut self, rhs: Vector<K, N>) {
-        self.data
-            .iter_mut()
-            .zip(&rhs.data)
-            .for_each(|(a, &b)| *a -= b);
+        self.iter_mut().zip(&rhs.data).for_each(|(a, &b)| *a -= b);
     }
 }
 
 impl<K: Field, const N: usize> SubAssign<K> for Vector<K, N> {
     fn sub_assign(&mut self, scalar: K) {
-        self.data.iter_mut().for_each(|a| *a -= scalar);
+        self.iter_mut().for_each(|a| *a -= scalar);
     }
 }
 
@@ -118,16 +128,13 @@ impl<K: Field, const N: usize> Mul<K> for Vector<K, N> {
 
 impl<K: Field, const N: usize> MulAssign<Vector<K, N>> for Vector<K, N> {
     fn mul_assign(&mut self, rhs: Vector<K, N>) {
-        self.data
-            .iter_mut()
-            .zip(&rhs.data)
-            .for_each(|(a, &b)| *a *= b);
+        self.iter_mut().zip(&rhs.data).for_each(|(a, &b)| *a *= b);
     }
 }
 
 impl<K: Field, const N: usize> MulAssign<K> for Vector<K, N> {
     fn mul_assign(&mut self, scl: K) {
-        self.data.iter_mut().for_each(|a| *a *= scl);
+        self.iter_mut().for_each(|a| *a *= scl);
     }
 }
 
@@ -137,7 +144,7 @@ impl<K: Field, const N: usize> Div<Vector<K, N>> for Vector<K, N> {
     fn div(self, rhs: Self) -> Self::Output {
         let mut data = [K::zero(); N];
         for i in 0..N {
-            data[i] = self.data[i] / rhs.data[i];
+            data[i] = self[i] / rhs[i];
         }
 
         Vector { data }
@@ -156,16 +163,13 @@ impl<K: Field, const N: usize> Div<K> for Vector<K, N> {
 
 impl<K: Field, const N: usize> DivAssign<Vector<K, N>> for Vector<K, N> {
     fn div_assign(&mut self, rhs: Vector<K, N>) {
-        self.data
-            .iter_mut()
-            .zip(&rhs.data)
-            .for_each(|(a, &b)| *a /= b);
+        self.iter_mut().zip(&rhs.data).for_each(|(a, &b)| *a /= b);
     }
 }
 
 impl<K: Field, const N: usize> DivAssign<K> for Vector<K, N> {
     fn div_assign(&mut self, scalar: K) {
-        self.data.iter_mut().for_each(|a| *a /= scalar);
+        self.iter_mut().for_each(|a| *a /= scalar);
     }
 }
 
@@ -181,8 +185,7 @@ impl<K: Field, const N: usize> Neg for Vector<K, N> {
 
 impl<K: Field, const N: usize> Vector<K, N> {
     fn operate<F: Fn(K, K) -> K>(&mut self, v: &Vector<K, N>, op: F) {
-        self.data
-            .iter_mut()
+        self.iter_mut()
             .zip(&v.data)
             .for_each(|(a, b)| *a = op(*a, *b));
     }
@@ -200,22 +203,13 @@ impl<K: Field, const N: usize> Vector<K, N> {
     }
 
     pub fn scl(&mut self, a: K) {
-        self.data.iter_mut().for_each(|v| *v = *v * a);
+        self.iter_mut().for_each(|v| *v = *v * a);
     }
 
     pub fn dot(&self, v: &Vector<K, N>) -> K {
-        self.data
-            .iter()
+        self.iter()
             .zip(&v.data)
             .fold(K::zero(), |acc, (&x, &y)| acc + x * y)
-    }
-
-    pub fn data_mut(&mut self) -> &mut [K; N] {
-        &mut self.data
-    }
-
-    pub fn data(&self) -> &[K; N] {
-        &self.data
     }
 }
 
