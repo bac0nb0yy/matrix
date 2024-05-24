@@ -5,7 +5,7 @@ use std::ops::{
     Add, AddAssign, Deref, DerefMut, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign,
 };
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vector<K, const N: usize> {
     data: [K; N],
 }
@@ -138,6 +138,10 @@ impl<K: Field, const N: usize> Div<Vector<K, N>> for Vector<K, N> {
     type Output = Self;
 
     fn div(self, rhs: Self) -> Self::Output {
+        if rhs.iter().any(|&x| x == K::zero()) {
+            panic!("Division by zero error")
+        }
+
         let mut data = self.clone();
         data.operate(&rhs, |a, b| a / b);
 
@@ -149,6 +153,10 @@ impl<K: Field, const N: usize> Div<K> for Vector<K, N> {
     type Output = Self;
 
     fn div(self, scalar: K) -> Self::Output {
+        if scalar == K::zero() {
+            panic!("Division by zero error")
+        }
+
         Vector {
             data: self.data.map(|a| a / scalar),
         }

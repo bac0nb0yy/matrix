@@ -16,6 +16,7 @@ pub trait Field:
     + Div
     + Neg<Output = Self>
     + Into<f64>
+    + PartialEq
     + Copy
     + Zero
     + One
@@ -37,6 +38,7 @@ impl<
             + Div
             + Neg<Output = Self>
             + Into<f64>
+            + PartialEq
             + Copy
             + Zero
             + One,
