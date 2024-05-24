@@ -196,6 +196,10 @@ impl<K: Field, const N: usize> Vector<K, N> {
         self.iter_mut().for_each(|v| *v = *v * a);
     }
 
+    pub fn inv_scl(&mut self, a: K) {
+        self.iter_mut().for_each(|v| *v = *v / a);
+    }
+
     pub fn dot(&self, v: &Vector<K, N>) -> K {
         self.iter()
             .zip(&v.data)

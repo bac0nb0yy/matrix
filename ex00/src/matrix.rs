@@ -2,9 +2,9 @@ use crate::field::*;
 use crate::vector::Vector;
 
 use std::fmt::{Display, Formatter, Result};
-use std::ops::{Add, AddAssign, Deref, DerefMut, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Deref, DerefMut, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Matrix<K, const M: usize, const N: usize> {
     data: [[K; N]; M],
 }
@@ -223,6 +223,24 @@ impl<K: Field, const M: usize, const N: usize> MulAssign<K> for Matrix<K, M, N> 
     }
 }
 
+impl<K: Field, const M: usize, const N: usize> Div<K> for Matrix<K, M, N> {
+    type Output = Self;
+
+    fn div(self, scalar: K) -> Self::Output {
+        Matrix {
+            data: self.data.map(|row| row.map(|val| val / scalar)),
+        }
+    }
+}
+
+impl<K: Field, const M: usize, const N: usize> DivAssign<K> for Matrix<K, M, N> {
+    fn div_assign(&mut self, rhs: K) {
+        self.iter_mut()
+            .flat_map(|row| row.iter_mut())
+            .for_each(|element| *element /= rhs);
+    }
+}
+
 impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
     pub fn new(data: [[K; N]; M]) -> Self {
         Matrix { data }
@@ -248,6 +266,11 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
     pub fn scl(&mut self, a: K) {
         self.iter_mut()
             .for_each(|row| row.iter_mut().for_each(|v| *v = *v * a));
+    }
+
+    pub fn inv_scl(&mut self, a: K) {
+        self.iter_mut()
+            .for_each(|row| row.iter_mut().for_each(|v| *v = *v / a));
     }
 
     pub fn mul_mat<const P: usize>(&self, rhs: &Matrix<K, N, P>) -> Matrix<K, M, P> {

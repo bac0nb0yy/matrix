@@ -30,7 +30,7 @@ mod vectors {
             let mut my_vector: Vector<f64, N> = generate_random_vector::<N>();
             let mut nalgebra_vector: SVector<f64, N> = SVector::from_vec(Vec::from(&*my_vector));
             let mut rng = rand::thread_rng();
-            let operation = rng.gen_range(0..3);
+            let operation = rng.gen_range(0..4);
 
             match operation {
                 0 => {
@@ -66,6 +66,16 @@ mod vectors {
                         my_vector.scl(scalar)
                     };
                     nalgebra_vector *= scalar;
+                }
+                3 => {
+                    let scalar: f64 = rng.gen();
+
+                    if operators {
+                        my_vector /= scalar
+                    } else {
+                        my_vector.inv_scl(scalar)
+                    };
+                    nalgebra_vector /= scalar;
                 }
                 _ => unreachable!(),
             }
@@ -135,7 +145,7 @@ mod matrices {
             let data_flat = flatten(&my_matrix);
             let mut nalgebra_matrix: SMatrix<f64, M, N> = SMatrix::from_vec(data_flat.clone());
             let mut rng = rand::thread_rng();
-            let operation = rng.gen_range(0..3);
+            let operation = rng.gen_range(0..4);
 
             match operation {
                 0 => {
@@ -171,6 +181,16 @@ mod matrices {
                         my_matrix.scl(scalar)
                     };
                     nalgebra_matrix *= scalar;
+                }
+                3 => {
+                    let scalar: f64 = rng.gen();
+
+                    if operators {
+                        my_matrix /= scalar
+                    } else {
+                        my_matrix.inv_scl(scalar)
+                    };
+                    nalgebra_matrix /= scalar;
                 }
                 _ => unreachable!(),
             }
@@ -223,40 +243,48 @@ fn main() {
     let v = Vector::from([5., 7.]);
     u.add(&v);
     println!("{}", u);
-    // [7.0]
-    // [10.0]
+    assert_eq!(u, Vector::from([7., 10.]));
+
     let mut u = Vector::from([2., 3.]);
     let v = Vector::from([5., 7.]);
     u.sub(&v);
     println!("{}", u);
-    // [-3.0]
-    // [-4.0]
+    assert_eq!(u, Vector::from([-3., -4.]));
+
     let mut u = Vector::from([2., 3.]);
     u.scl(2.);
     println!("{}", u);
-    // [4.0]
-    // [6.0]
+    assert_eq!(u, Vector::from([4., 6.]));
+
     let mut u = Matrix::from([[1., 2.], [3., 4.]]);
     let v = Matrix::from([[7., 4.], [-2., 2.]]);
     u.add(&v);
     println!("{}", u);
-    // [8.0, 6.0]
-    // [1.0, 6.0]
+    assert_eq!(u, Matrix::from([[8., 6.], [1., 6.]]));
+
     let mut u = Matrix::from([[1., 2.], [3., 4.]]);
     let v = Matrix::from([[7., 4.], [-2., 2.]]);
     u.sub(&v);
     println!("{}", u);
-    // [-6.0, -2.0]
-    // [5.0, 2.0]
+    assert_eq!(u, Matrix::from([[-6., -2.], [5., 2.]]));
+
     let mut u = Matrix::from([[1., 2.], [3., 4.]]);
     u.scl(2.);
     println!("{}", u);
-    // [2.0, 4.0]
-    // [6.0, 8.0]
-    let u = Vector::from([2., 3.]);
+    assert_eq!(u, Matrix::from([[2., 4.], [6., 8.]]));
+
+    let mut u = Vector::from([2., 3.]);
     let v = Vector::from([2., 3.]);
-    println!("{}", u + v);
-    for x in v {
-        println!("{}", x);
-    }
+    u += v;
+    println!("{}", u);
+    assert_eq!(u, Vector::from([4., 6.]));
+
+    u.inv_scl(2.);
+    println!("{}", u);
+    assert_eq!(u, Vector::from([2., 3.]));
+
+    let mut u = Matrix::from([[1., 2.], [3., 4.]]);
+    u.inv_scl(2.);
+    println!("{}", u);
+    assert_eq!(u, Matrix::from([[0.5, 1.], [1.5, 2.]]));
 }
