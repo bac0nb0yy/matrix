@@ -77,27 +77,19 @@ impl<K: Field, const M: usize, const N: usize> Add<K> for Matrix<K, M, N> {
 
 impl<K: Field, const M: usize, const N: usize> AddAssign<Matrix<K, M, N>> for Matrix<K, M, N> {
     fn add_assign(&mut self, rhs: Matrix<K, M, N>) {
-        self.iter_mut()
-            .zip(&rhs.data)
-            .for_each(|(row1, row2)| row1.iter_mut().zip(row2).for_each(|(a, &b)| *a += b));
+        self.operate(&rhs, |a, b| a + b);
     }
 }
 
 impl<K: Field, const M: usize, const N: usize> AddAssign<Vector<K, N>> for Matrix<K, M, N> {
     fn add_assign(&mut self, rhs: Vector<K, N>) {
-        self.iter_mut().for_each(|row| {
-            for (a, &b) in row.iter_mut().zip(rhs.iter()) {
-                *a += b;
-            }
-        });
+        self.operate_vec(&rhs, |a, b| a + b);
     }
 }
 
 impl<K: Field, const M: usize, const N: usize> AddAssign<K> for Matrix<K, M, N> {
-    fn add_assign(&mut self, rhs: K) {
-        self.iter_mut()
-            .flat_map(|row| row.iter_mut())
-            .for_each(|element| *element += rhs);
+    fn add_assign(&mut self, scalar: K) {
+        self.operate_scalar(scalar, |a, b| a + b);
     }
 }
 
@@ -135,27 +127,19 @@ impl<K: Field, const M: usize, const N: usize> Sub<K> for Matrix<K, M, N> {
 
 impl<K: Field, const M: usize, const N: usize> SubAssign<Matrix<K, M, N>> for Matrix<K, M, N> {
     fn sub_assign(&mut self, rhs: Matrix<K, M, N>) {
-        self.iter_mut()
-            .zip(&rhs.data)
-            .for_each(|(row1, row2)| row1.iter_mut().zip(row2).for_each(|(a, &b)| *a -= b));
+        self.operate(&rhs, |a, b| a - b);
     }
 }
 
 impl<K: Field, const M: usize, const N: usize> SubAssign<Vector<K, N>> for Matrix<K, M, N> {
     fn sub_assign(&mut self, rhs: Vector<K, N>) {
-        self.iter_mut().for_each(|row| {
-            for (a, &b) in row.iter_mut().zip(rhs.iter()) {
-                *a -= b;
-            }
-        });
+        self.operate_vec(&rhs, |a, b| a - b);
     }
 }
 
 impl<K: Field, const M: usize, const N: usize> SubAssign<K> for Matrix<K, M, N> {
-    fn sub_assign(&mut self, rhs: K) {
-        self.iter_mut()
-            .flat_map(|row| row.iter_mut())
-            .for_each(|element| *element -= rhs);
+    fn sub_assign(&mut self, scalar: K) {
+        self.operate_scalar(scalar, |a, b| a - b);
     }
 }
 
@@ -202,10 +186,8 @@ impl<K: Field, const M: usize, const N: usize, const P: usize> MulAssign<Matrix<
 }
 
 impl<K: Field, const M: usize, const N: usize> MulAssign<K> for Matrix<K, M, N> {
-    fn mul_assign(&mut self, rhs: K) {
-        self.iter_mut()
-            .flat_map(|row| row.iter_mut())
-            .for_each(|element| *element *= rhs);
+    fn mul_assign(&mut self, scalar: K) {
+        self.operate_scalar(scalar, |a, b| a * b);
     }
 }
 
@@ -220,10 +202,8 @@ impl<K: Field, const M: usize, const N: usize> Div<K> for Matrix<K, M, N> {
 }
 
 impl<K: Field, const M: usize, const N: usize> DivAssign<K> for Matrix<K, M, N> {
-    fn div_assign(&mut self, rhs: K) {
-        self.iter_mut()
-            .flat_map(|row| row.iter_mut())
-            .for_each(|element| *element /= rhs);
+    fn div_assign(&mut self, scalar: K) {
+        self.operate_scalar(scalar, |a, b| a / b);
     }
 }
 
@@ -247,6 +227,11 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
         });
     }
 
+    fn operate_scalar<F: Fn(K, K) -> K>(&mut self, scalar: K, op: F) {
+        self.iter_mut()
+            .for_each(|row| row.iter_mut().for_each(|elt| *elt = op(*elt, scalar)));
+    }
+
     pub fn add(&mut self, v: &Matrix<K, M, N>) {
         self.operate(v, |a, b| a + b);
     }
@@ -255,14 +240,12 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
         self.operate(v, |a, b| a - b);
     }
 
-    pub fn scl(&mut self, a: K) {
-        self.iter_mut()
-            .for_each(|row| row.iter_mut().for_each(|v| *v = *v * a));
+    pub fn scl(&mut self, scalar: K) {
+        self.operate_scalar(scalar, |a, b| a * b);
     }
 
-    pub fn inv_scl(&mut self, a: K) {
-        self.iter_mut()
-            .for_each(|row| row.iter_mut().for_each(|v| *v = *v / a));
+    pub fn inv_scl(&mut self, scalar: K) {
+        self.operate_scalar(scalar, |a, b| a / b);
     }
 
     pub fn mul_mat<const P: usize>(&self, rhs: &Matrix<K, N, P>) -> Matrix<K, M, P> {

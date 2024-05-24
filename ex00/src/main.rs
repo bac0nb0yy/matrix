@@ -289,7 +289,7 @@ fn main() {
     assert_eq!(u, Matrix::from([[0.5, 1.], [1.5, 2.]]));
 
     let mut u = Matrix::from([[1., 2.], [3., 4.]]);
-    let mut v = Vector::from([2., 3.]);
+    let v = Vector::from([2., 3.]);
     u += v;
     println!("{}", u);
     assert_eq!(u, Matrix::from([[3., 5.], [5., 7.]]));

@@ -75,8 +75,8 @@ impl<K: Field, const N: usize> AddAssign<Vector<K, N>> for Vector<K, N> {
 }
 
 impl<K: Field, const N: usize> AddAssign<K> for Vector<K, N> {
-    fn add_assign(&mut self, rhs: K) {
-        self.iter_mut().for_each(|a| *a += rhs);
+    fn add_assign(&mut self, scalar: K) {
+        self.iter_mut().for_each(|a| *a += scalar);
     }
 }
 
@@ -186,12 +186,12 @@ impl<K: Field, const N: usize> Vector<K, N> {
         self.operate(v, |a, b| a - b);
     }
 
-    pub fn scl(&mut self, a: K) {
-        self.iter_mut().for_each(|v| *v = *v * a);
+    pub fn scl(&mut self, scalar: K) {
+        self.iter_mut().for_each(|v| *v = *v * scalar);
     }
 
-    pub fn inv_scl(&mut self, a: K) {
-        self.iter_mut().for_each(|v| *v = *v / a);
+    pub fn inv_scl(&mut self, scalar: K) {
+        self.iter_mut().for_each(|v| *v = *v / scalar);
     }
 
     pub fn dot(&self, v: &Vector<K, N>) -> K {
