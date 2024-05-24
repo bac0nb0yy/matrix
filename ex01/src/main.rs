@@ -45,7 +45,7 @@ mod vectors {
                         acc
                     });
 
-            for (i, &value) in my_results.data().iter().enumerate() {
+            for (i, &value) in my_results.iter().enumerate() {
                 assert_abs_diff_eq!(value, nalgebra_results[i], epsilon = THRESHOLD);
             }
         }
@@ -174,16 +174,11 @@ fn main() {
     let v1 = Vector::from([1., 2., 3.]);
     let v2 = Vector::from([0., 10., -100.]);
 
-    println!(
-        "{}",
-        Vector::linear_combination(&[e1, e2, e3], &[10.0, -2.0, 0.5])
-    );
-    // [10.]
-    // [-2.]
-    // [0.5]
+    let rez = Vector::linear_combination(&[e1, e2, e3], &[10.0, -2.0, 0.5]);
+    println!("{}", rez);
+    assert_eq!(rez, Vector::from([10., -2., 0.5]));
 
-    println!("{}", Vector::linear_combination(&[v1, v2], &[10., -2.]));
-    // [10.]
-    // [0.]
-    // [230.]
+    let rez = Vector::linear_combination(&[v1, v2], &[10., -2.]);
+    println!("{}", rez);
+    assert_eq!(rez, Vector::from([10., 0., 230.]));
 }
