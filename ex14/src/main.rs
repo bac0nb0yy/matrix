@@ -36,7 +36,7 @@ fn main() {
     let fov = 60.0 * PI / 180.0;
     let ratio = 1080.0 / 1080.0;
     let near = 1.;
-    let far = 150.0;
+    let far = 100.0;
 
     let projection_matrix = projection(fov, ratio, near, far);
     print_formatted(&projection_matrix);
