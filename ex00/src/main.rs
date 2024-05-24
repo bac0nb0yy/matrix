@@ -253,7 +253,7 @@ fn main() {
     println!("{}", u);
     // [2.0, 4.0]
     // [6.0, 8.0]
-    let mut u = Vector::from([2., 3.]);
-    u -= 2.0;
-    println!("{}", u);
+    let u = Vector::from([2., 3.]);
+    let v = Vector::from([2., 3.]);
+    println!("{}", u + v);
 }

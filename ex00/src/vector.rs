@@ -42,12 +42,10 @@ impl<K: Field, const N: usize> Add<Vector<K, N>> for Vector<K, N> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let mut data = [K::zero(); N];
-        for i in 0..N {
-            data[i] = self[i] + rhs[i];
-        }
+        let mut data = self.clone();
+        data.operate(&rhs, |a, b| a + b);
 
-        Vector { data: data }
+        data
     }
 }
 
@@ -77,12 +75,10 @@ impl<K: Field, const N: usize> Sub<Vector<K, N>> for Vector<K, N> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let mut data = [K::zero(); N];
-        for i in 0..N {
-            data[i] = self[i] - rhs[i];
-        }
+        let mut data = self.clone();
+        data.operate(&rhs, |a, b| a - b);
 
-        Vector { data }
+        data
     }
 }
 
@@ -142,12 +138,10 @@ impl<K: Field, const N: usize> Div<Vector<K, N>> for Vector<K, N> {
     type Output = Self;
 
     fn div(self, rhs: Self) -> Self::Output {
-        let mut data = [K::zero(); N];
-        for i in 0..N {
-            data[i] = self[i] / rhs[i];
-        }
+        let mut data = self.clone();
+        data.operate(&rhs, |a, b| a / b);
 
-        Vector { data }
+        data
     }
 }
 
