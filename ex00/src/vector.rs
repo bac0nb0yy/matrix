@@ -51,7 +51,7 @@ impl<K: Field, const N: usize> Add<Vector<K, N>> for Vector<K, N> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let mut data = self.clone();
+        let mut data = self;
         data.operate(&rhs, |a, b| a + b);
 
         data
@@ -84,7 +84,7 @@ impl<K: Field, const N: usize> Sub<Vector<K, N>> for Vector<K, N> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let mut data = self.clone();
+        let mut data = self;
         data.operate(&rhs, |a, b| a - b);
 
         data

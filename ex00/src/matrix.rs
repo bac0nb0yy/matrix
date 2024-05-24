@@ -47,14 +47,10 @@ impl<K: Field, const M: usize, const N: usize> Add<Matrix<K, M, N>> for Matrix<K
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let mut data = [[K::zero(); N]; M];
-        for i in 0..M {
-            for j in 0..N {
-                data[i][j] = self[i][j] + rhs[i][j];
-            }
-        }
+        let mut data = self;
+        data.operate(&rhs, |a, b| a + b);
 
-        Matrix { data }
+        data
     }
 }
 
