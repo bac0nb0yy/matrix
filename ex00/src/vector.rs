@@ -143,21 +143,6 @@ impl<K: Field, const N: usize> MulAssign<K> for Vector<K, N> {
     }
 }
 
-impl<K: Field, const N: usize> Div<Vector<K, N>> for Vector<K, N> {
-    type Output = Self;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        if rhs.iter().any(|&x| x == K::zero()) {
-            panic!("Division by zero error")
-        }
-
-        let mut data = self.clone();
-        data.operate(&rhs, |a, b| a / b);
-
-        data
-    }
-}
-
 impl<K: Field, const N: usize> Div<K> for Vector<K, N> {
     type Output = Self;
 
@@ -169,12 +154,6 @@ impl<K: Field, const N: usize> Div<K> for Vector<K, N> {
         Vector {
             data: self.data.map(|a| a / scalar),
         }
-    }
-}
-
-impl<K: Field, const N: usize> DivAssign<Vector<K, N>> for Vector<K, N> {
-    fn div_assign(&mut self, rhs: Vector<K, N>) {
-        self.iter_mut().zip(&rhs.data).for_each(|(a, &b)| *a /= b);
     }
 }
 
