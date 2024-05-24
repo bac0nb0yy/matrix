@@ -76,7 +76,7 @@ impl<K: Field, const N: usize> AddAssign<Vector<K, N>> for Vector<K, N> {
 
 impl<K: Field, const N: usize> AddAssign<K> for Vector<K, N> {
     fn add_assign(&mut self, scalar: K) {
-        self.iter_mut().for_each(|a| *a += scalar);
+        self.operate_scalar(scalar, |a, b| a + b);
     }
 }
 
@@ -109,7 +109,7 @@ impl<K: Field, const N: usize> SubAssign<Vector<K, N>> for Vector<K, N> {
 
 impl<K: Field, const N: usize> SubAssign<K> for Vector<K, N> {
     fn sub_assign(&mut self, scalar: K) {
-        self.iter_mut().for_each(|a| *a -= scalar);
+        self.operate_scalar(scalar, |a, b| a - b);
     }
 }
 
@@ -174,6 +174,10 @@ impl<K: Field, const N: usize> Vector<K, N> {
             .for_each(|(a, b)| *a = op(*a, *b));
     }
 
+    fn operate_scalar<F: Fn(K, K) -> K>(&mut self, scalar: K, op: F) {
+        self.iter_mut().for_each(|a| *a = op(*a, scalar));
+    }
+
     pub fn new(data: [K; N]) -> Self {
         Vector { data }
     }
@@ -187,11 +191,11 @@ impl<K: Field, const N: usize> Vector<K, N> {
     }
 
     pub fn scl(&mut self, scalar: K) {
-        self.iter_mut().for_each(|v| *v = *v * scalar);
+        self.operate_scalar(scalar, |a, b| a * b);
     }
 
     pub fn inv_scl(&mut self, scalar: K) {
-        self.iter_mut().for_each(|v| *v = *v / scalar);
+        self.operate_scalar(scalar, |a, b| a / b);
     }
 
     pub fn dot(&self, v: &Vector<K, N>) -> K {
