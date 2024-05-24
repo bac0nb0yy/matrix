@@ -59,11 +59,8 @@ impl<K: Field, const M: usize, const N: usize> Add<Vector<K, N>> for Matrix<K, M
 
     fn add(self, rhs: Vector<K, N>) -> Self::Output {
         let mut result = self;
-        for i in 0..M {
-            for j in 0..N {
-                result[i][j] += rhs[j];
-            }
-        }
+        result.operate_vec(&rhs, |a, b| a + b);
+
         result
     }
 }
@@ -108,14 +105,10 @@ impl<K: Field, const M: usize, const N: usize> Sub<Matrix<K, M, N>> for Matrix<K
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let mut data = [[K::zero(); N]; M];
-        for i in 0..M {
-            for j in 0..N {
-                data[i][j] = self[i][j] - rhs[i][j];
-            }
-        }
+        let mut data = self;
+        data.operate(&rhs, |a, b| a - b);
 
-        Matrix { data }
+        data
     }
 }
 
@@ -124,11 +117,8 @@ impl<K: Field, const M: usize, const N: usize> Sub<Vector<K, N>> for Matrix<K, M
 
     fn sub(self, rhs: Vector<K, N>) -> Self::Output {
         let mut result = self;
-        for i in 0..M {
-            for j in 0..N {
-                result[i][j] -= rhs[j];
-            }
-        }
+        result.operate_vec(&rhs, |a, b| a - b);
+
         result
     }
 }
@@ -248,6 +238,12 @@ impl<K: Field, const M: usize, const N: usize> Matrix<K, M, N> {
                 .iter_mut()
                 .zip(b_row)
                 .for_each(|(a, b)| *a = op(*a, *b));
+        });
+    }
+
+    fn operate_vec<F: Fn(K, K) -> K>(&mut self, v: &Vector<K, N>, op: F) {
+        self.iter_mut().for_each(|a_row| {
+            a_row.iter_mut().zip(*v).for_each(|(a, b)| *a = op(*a, b));
         });
     }
 

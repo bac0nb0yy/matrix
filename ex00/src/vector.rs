@@ -70,7 +70,7 @@ impl<K: Field, const N: usize> Add<K> for Vector<K, N> {
 
 impl<K: Field, const N: usize> AddAssign<Vector<K, N>> for Vector<K, N> {
     fn add_assign(&mut self, rhs: Vector<K, N>) {
-        self.iter_mut().zip(&rhs.data).for_each(|(a, &b)| *a += b);
+        self.operate(&rhs, |a, b| a + b);
     }
 }
 
@@ -103,7 +103,7 @@ impl<K: Field, const N: usize> Sub<K> for Vector<K, N> {
 
 impl<K: Field, const N: usize> SubAssign<Vector<K, N>> for Vector<K, N> {
     fn sub_assign(&mut self, rhs: Vector<K, N>) {
-        self.iter_mut().zip(&rhs.data).for_each(|(a, &b)| *a -= b);
+        self.operate(&rhs, |a, b| a - b);
     }
 }
 
@@ -131,15 +131,9 @@ impl<K: Field, const N: usize> Mul<K> for Vector<K, N> {
     }
 }
 
-impl<K: Field, const N: usize> MulAssign<Vector<K, N>> for Vector<K, N> {
-    fn mul_assign(&mut self, rhs: Vector<K, N>) {
-        self.iter_mut().zip(&rhs.data).for_each(|(a, &b)| *a *= b);
-    }
-}
-
 impl<K: Field, const N: usize> MulAssign<K> for Vector<K, N> {
-    fn mul_assign(&mut self, scl: K) {
-        self.iter_mut().for_each(|a| *a *= scl);
+    fn mul_assign(&mut self, scalar: K) {
+        self.scl(scalar);
     }
 }
 
@@ -159,7 +153,7 @@ impl<K: Field, const N: usize> Div<K> for Vector<K, N> {
 
 impl<K: Field, const N: usize> DivAssign<K> for Vector<K, N> {
     fn div_assign(&mut self, scalar: K) {
-        self.iter_mut().for_each(|a| *a /= scalar);
+        self.inv_scl(scalar);
     }
 }
 
